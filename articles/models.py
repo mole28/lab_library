@@ -66,9 +66,12 @@ class Book(models.Model):
     is_for_sale = models.BooleanField(default=False, verbose_name="זמין לרכישה")
     stock = models.PositiveIntegerField(default=0, verbose_name="מלאי זמין")
     
-    # השדה החדש שמאפשר שליטה על סדר התצוגה בעמוד הספרים
+    # השדה שמאפשר שליטה על סדר התצוגה בעמוד הספרים
     order = models.PositiveIntegerField(default=0, verbose_name="סדר תצוגה (1 יופיע ראשון)")
     
+    class Meta:
+        ordering = ['order', 'title'] # <-- הוסף את השורות האלו לכאן
+
     def __str__(self):
         return self.title
 
