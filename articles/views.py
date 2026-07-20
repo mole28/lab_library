@@ -24,7 +24,8 @@ from .emails import send_order_confirmation
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 
-client = genai.Client(api_key="AQ.Ab8RN6KSDvqhRk10R9g9M3hmz5m-RN5qpsZSFaHzbtBhtTz-uQ")
+import os
+client = genai.Client(api_key=os.environ.get('GEMINI_API_KEY'))
 
 # ==========================================
 # פונקציות לוח שנה עברי (פרשה, הפטרה, מועדים)
