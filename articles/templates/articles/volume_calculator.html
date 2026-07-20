@@ -1,0 +1,427 @@
+{% extends 'articles/base.html' %}
+{% load static %}
+
+{% block title %}מחשבון מידות נפח | הספרייה{% endblock %}
+
+{% block content %}
+<style>
+    .content-wrapper {
+        max-width: 100% !important;
+        background-color: transparent !important;
+        box-shadow: none !important;
+    }
+
+    .calc-container {
+        width: 100%;
+        background: linear-gradient(135deg, #fdfcfb 0%, #f4f1ea 100%);
+        border-radius: 15px;
+        box-shadow: 0 15px 40px rgba(0,0,0,0.12);
+        padding: 3rem 2rem;
+        border: 1px solid #e8e1d7;
+    }
+    
+    @media (min-width: 992px) {
+        .calc-container { padding: 4rem 3rem; }
+    }
+
+    .calc-header {
+        color: #2c3e50;
+        border-bottom: 2px solid #a67c52;
+        padding-bottom: 15px;
+        margin-bottom: 20px;
+        font-family: 'Frank Ruhl Libre', serif;
+    }
+    .instruction-text {
+        font-size: 1.3rem;
+        color: #4a4a4a;
+        font-weight: 500;
+    }
+    .input-group-custom {
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        overflow: hidden;
+        transition: border-color 0.3s, box-shadow 0.3s;
+        background-color: #ffffff;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+    .input-group-custom:focus-within {
+        border-color: #a67c52;
+        box-shadow: 0 4px 15px rgba(166,124,82,0.15);
+    }
+    .calc-input {
+        border: none;
+        box-shadow: none !important;
+        font-size: 1.3rem;
+        padding: 15px;
+        text-align: center;
+        background-color: transparent;
+    }
+    .calc-select {
+        border: none;
+        background-color: #f8f9fa;
+        font-size: 1.1rem;
+        font-weight: bold;
+        color: #3f4050;
+        border-right: 1px solid #e9ecef;
+        padding: 0 15px;
+        cursor: pointer;
+    }
+    .calc-select:focus { outline: none; }
+    
+    /* הותאם ל-4 בשורה */
+    .result-card {
+        background-color: #ffffff;
+        border: 1px solid #eaeaea;
+        border-radius: 10px;
+        padding: 15px 5px;
+        text-align: center;
+        transition: all 0.3s ease;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.04);
+    }
+    .result-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(166,124,82,0.15);
+        border-color: #d4af37;
+    }
+    .result-value {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #a67c52;
+        margin-bottom: 8px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    .result-label {
+        font-size: 1rem;
+        color: #555;
+        font-weight: 600;
+    }
+    .calc-side-title {
+        color: #2c3e50;
+        font-weight: 800;
+        margin-bottom: 2rem;
+        font-family: 'Assistant', sans-serif;
+        font-size: 1.4rem;
+    }
+    
+    .calc-side-right { padding-left: 2rem !important; }
+    .divider-vertical {
+        border-left: 2px dashed #d1c8bc;
+        padding-right: 2rem !important;
+    }
+
+    .custom-tooltip {
+        position: relative;
+        display: inline-block;
+        cursor: help;
+        color: #d4af37;
+        margin-right: 4px;
+        top: -0.5em;
+    }
+    .custom-tooltip .tooltip-text {
+        visibility: hidden;
+        width: max-content;
+        min-width: 160px;
+        background-color: #2c3e50;
+        color: #fff;
+        text-align: center;
+        border-radius: 6px;
+        padding: 8px;
+        position: absolute;
+        z-index: 1000;
+        bottom: 150%;
+        left: 50%;
+        transform: translateX(-50%);
+        opacity: 0;
+        transition: opacity 0.3s;
+        font-size: 0.9rem;
+        font-family: 'Assistant', sans-serif;
+        line-height: 1.5;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    .custom-tooltip .tooltip-text::after {
+        content: "";
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        margin-left: -6px;
+        border-width: 6px;
+        border-style: solid;
+        border-color: #2c3e50 transparent transparent transparent;
+    }
+    .custom-tooltip:hover .tooltip-text {
+        visibility: visible;
+        opacity: 1;
+    }
+    .tooltip-title {
+        color: #d4af37;
+        font-size: 0.8rem;
+        display: block;
+        border-bottom: 1px solid #4a5d70;
+        margin-bottom: 4px;
+        padding-bottom: 2px;
+    }
+    
+    @media (max-width: 991px) {
+        .calc-container { padding: 2rem 1rem; }
+        .calc-side-right { padding-left: calc(var(--bs-gutter-x) * .5) !important; }
+        .divider-vertical {
+            border-left: none;
+            border-top: 2px dashed #d1c8bc;
+            padding-top: 3rem;
+            margin-top: 3rem;
+            padding-right: calc(var(--bs-gutter-x) * .5) !important;
+        }
+    }
+</style>
+
+<div class="container-fluid mt-4 mb-5" style="max-width: 1400px;">
+
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb" style="font-size: 1.15rem; font-weight: 600;">
+            <li class="breadcrumb-item"><a href="{% url 'articles:list' %}" style="color: #a67c52; text-decoration: none;"><i class="bi bi-house-door"></i> ראשי</a></li>
+            <li class="breadcrumb-item active" aria-current="page" style="color: #6c757d;">מחשבון מידות נפח</li>
+        </ol>
+    </nav>
+
+    <div class="calc-container">
+        <h2 class="calc-header text-center fw-bold">
+            <i class="bi bi-cup-straw"></i> מחשבון מידות נפח - חז"ל
+        </h2>
+        <p class="text-center instruction-text mb-3">
+            הכניסו את המידה הרצויה ובחרו את יחידת המידה. החישוב מתבצע אוטומטית לפי השיעור המדוייק, כפי שהתבאר בספר מידה של תורה.
+        </p>
+
+        <div class="text-center mb-5">
+            <div class="d-inline-block px-4 py-2 rounded-pill shadow-sm" style="background-color: #ffffff; border: 1px solid rgba(166, 124, 82, 0.3);">
+                <i class="bi bi-book me-2" style="color: #a67c52;"></i>
+                <span class="text-muted" style="font-size: 1.1rem;">לעיון בסוגיא ניתן ללמוד הספר </span>
+                {% if mida_book %}
+                <a href="{% url 'articles:book_detail' mida_book.pk %}" class="fw-bold text-decoration-none" style="color: #a67c52; border-bottom: 1px dashed #a67c52;">
+                    "מידה של תורה"
+                </a>
+                {% else %}
+                <span class="fw-bold" style="color: #a67c52;">"מידה של תורה"</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="row">
+            
+            <div class="col-lg-6 calc-side-right">
+                <h4 class="text-center calc-side-title">המרת מידות זמננו למידות חז"ל</h4>
+                
+                <div class="row justify-content-center mb-4">
+                    <div class="col-md-11">
+                        <div class="input-group input-group-custom">
+                            <input type="number" id="inputValue1" class="form-control calc-input" placeholder="הזן מספר..." oninput="calculateRegular()">
+                            <select id="unitSelect1" class="form-select calc-select" onchange="calculateRegular()">
+                                <option value="cc">סמ"ק (ml)</option>
+                                <option value="liter">ליטר</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- גריד 4 עמודות (col-md-3) -->
+                <div class="row g-3 justify-content-center">
+                    <div class="col-6 col-md-3">
+                        <div class="result-card">
+                            <div class="result-value">
+                                <span id="res-beitza">0</span>
+                                <sup class="custom-tooltip"><i class="bi bi-info-circle-fill" style="font-size: 0.6em;"></i>
+                                    <span class="tooltip-text" id="tt-beitza"></span>
+                                </sup>
+                            </div>
+                            <div class="result-label">ביצה</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="result-card">
+                            <div class="result-value">
+                                <span id="res-reviit">0</span>
+                                <sup class="custom-tooltip"><i class="bi bi-info-circle-fill" style="font-size: 0.6em;"></i>
+                                    <span class="tooltip-text" id="tt-reviit"></span>
+                                </sup>
+                            </div>
+                            <div class="result-label">רביעית</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="result-card">
+                            <div class="result-value">
+                                <span id="res-log">0</span>
+                                <sup class="custom-tooltip"><i class="bi bi-info-circle-fill" style="font-size: 0.6em;"></i>
+                                    <span class="tooltip-text" id="tt-log"></span>
+                                </sup>
+                            </div>
+                            <div class="result-label">לוג</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="result-card">
+                            <div class="result-value">
+                                <span id="res-kav">0</span>
+                                <sup class="custom-tooltip"><i class="bi bi-info-circle-fill" style="font-size: 0.6em;"></i>
+                                    <span class="tooltip-text" id="tt-kav"></span>
+                                </sup>
+                            </div>
+                            <div class="result-label">קב</div>
+                        </div>
+                    </div>
+                    
+                    <!-- שורה שנייה: הנותרים -->
+                    <div class="col-6 col-md-3">
+                        <div class="result-card">
+                            <div class="result-value">
+                                <span id="res-hin">0</span>
+                                <sup class="custom-tooltip"><i class="bi bi-info-circle-fill" style="font-size: 0.6em;"></i>
+                                    <span class="tooltip-text" id="tt-hin"></span>
+                                </sup>
+                            </div>
+                            <div class="result-label">הין</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="result-card">
+                            <div class="result-value">
+                                <span id="res-seah">0</span>
+                                <sup class="custom-tooltip"><i class="bi bi-info-circle-fill" style="font-size: 0.6em;"></i>
+                                    <span class="tooltip-text" id="tt-seah"></span>
+                                </sup>
+                            </div>
+                            <div class="result-label">סאה</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="result-card">
+                            <div class="result-value">
+                                <span id="res-eifah">0</span>
+                                <sup class="custom-tooltip"><i class="bi bi-info-circle-fill" style="font-size: 0.6em;"></i>
+                                    <span class="tooltip-text" id="tt-eifah"></span>
+                                </sup>
+                            </div>
+                            <div class="result-label">איפה</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6 divider-vertical">
+                <h4 class="text-center calc-side-title">המרת מידות חז"ל לזמננו</h4>
+                
+                <div class="row justify-content-center mb-4">
+                    <div class="col-md-11">
+                        <div class="input-group input-group-custom">
+                            <input type="number" id="inputValue2" class="form-control calc-input" placeholder="הזן מספר..." oninput="calculateReverse()">
+                            <select id="unitSelect2" class="form-select calc-select" onchange="calculateReverse()">
+                                <option value="beitza">ביצה</option>
+                                <option value="reviit">רביעית</option>
+                                <option value="log">לוג</option>
+                                <option value="kav">קב</option>
+                                <option value="hin">הין</option>
+                                <option value="seah">סאה</option>
+                                <option value="eifah">איפה</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3 justify-content-center">
+                    <div class="col-6 col-md-5">
+                        <div class="result-card">
+                            <div class="result-value" style="font-size: 1.8rem;">
+                                <span id="res-cc">0</span>
+                                <sup class="custom-tooltip"><i class="bi bi-info-circle-fill" style="font-size: 0.6em;"></i>
+                                    <span class="tooltip-text" id="tt-cc"></span>
+                                </sup>
+                            </div>
+                            <div class="result-label">סמ"ק</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-5">
+                        <div class="result-card">
+                            <div class="result-value" style="font-size: 1.8rem;">
+                                <span id="res-liter">0</span>
+                                <sup class="custom-tooltip"><i class="bi bi-info-circle-fill" style="font-size: 0.6em;"></i>
+                                    <span class="tooltip-text" id="tt-liter"></span>
+                                </sup>
+                            </div>
+                            <div class="result-label">ליטר</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="mt-5 pt-4 text-center" style="border-top: 1px solid #e8e1d7;">
+            <span class="text-muted fw-bold me-3" style="font-size: 1.1rem;">מחשבונים נוספים:</span>
+            <a href="{% url 'articles:calculator' %}" class="btn btn-sm" style="background-color: #fdfaf5; color: #a67c52; border: 1px solid #d1c8bc; border-radius: 50px; padding: 6px 20px; font-weight: bold; margin: 0 5px;">
+                <i class="bi bi-rulers"></i> מחשבון אורך
+            </a>
+            <a href="{% url 'articles:weight_calculator' %}" class="btn btn-sm" style="background-color: #fdfaf5; color: #a67c52; border: 1px solid #d1c8bc; border-radius: 50px; padding: 6px 20px; font-weight: bold; margin: 0 5px;">
+                <i class="bi bi-coin"></i> משקל ומטבעות
+            </a>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    function updateRegularResult(id, ccValue, mstFactor, rcnFactor, ciFactor, digits) {
+        document.getElementById('res-' + id).innerText = (ccValue / mstFactor).toLocaleString('en-US', {maximumFractionDigits: digits});
+        let rcn = (ccValue / rcnFactor).toLocaleString('en-US', {maximumFractionDigits: digits});
+        let ci = (ccValue / ciFactor).toLocaleString('en-US', {maximumFractionDigits: digits});
+        document.getElementById('tt-' + id).innerHTML = `<span class="tooltip-title">שיטות נוספות</span>לפי הגר"ח נאה: ${rcn}<br>לפי החזון איש: ${ci}`;
+    }
+
+    function calculateRegular() {
+        let val = parseFloat(document.getElementById('inputValue1').value) || 0;
+        let unit = document.getElementById('unitSelect1').value;
+        let cc = 0;
+
+        if (unit === 'cc') cc = val;
+        if (unit === 'liter') cc = val * 1000;
+
+        updateRegularResult('beitza', cc, 50, 57.6, 100, 2);
+        updateRegularResult('reviit', cc, 75, 86.4, 150, 2);
+        updateRegularResult('log', cc, 300, 345.6, 600, 2);
+        updateRegularResult('kav', cc, 1200, 1382.4, 2400, 2);
+        updateRegularResult('hin', cc, 3600, 4147.2, 7200, 2);
+        updateRegularResult('seah', cc, 7200, 8294.4, 14400, 2);
+        updateRegularResult('eifah', cc, 21600, 24883.2, 43200, 2);
+    }
+
+    function updateReverseResult(val, mstFactor, rcnFactor, ciFactor) {
+        let ccMst = val * mstFactor;
+        let ccRcn = val * rcnFactor;
+        let ccCi = val * ciFactor;
+
+        document.getElementById('res-cc').innerText = ccMst.toLocaleString('en-US', {maximumFractionDigits: 2});
+        document.getElementById('tt-cc').innerHTML = `<span class="tooltip-title">שיטות נוספות</span>לפי הגר"ח נאה: ${ccRcn.toLocaleString('en-US', {maximumFractionDigits: 2})} סמ"ק<br>לפי החזון איש: ${ccCi.toLocaleString('en-US', {maximumFractionDigits: 2})} סמ"ק`;
+        document.getElementById('res-liter').innerText = (ccMst / 1000).toLocaleString('en-US', {maximumFractionDigits: 4});
+        document.getElementById('tt-liter').innerHTML = `<span class="tooltip-title">שיטות נוספות</span>לפי הגר"ח נאה: ${(ccRcn / 1000).toLocaleString('en-US', {maximumFractionDigits: 4})} ליטר<br>לפי החזון איש: ${(ccCi / 1000).toLocaleString('en-US', {maximumFractionDigits: 4})} ליטר`;
+    }
+
+    function calculateReverse() {
+        let val = parseFloat(document.getElementById('inputValue2').value) || 0;
+        let unit = document.getElementById('unitSelect2').value;
+
+        if (unit === 'beitza') updateReverseResult(val, 50, 57.6, 100);
+        if (unit === 'reviit') updateReverseResult(val, 75, 86.4, 150);
+        if (unit === 'log') updateReverseResult(val, 300, 345.6, 600);
+        if (unit === 'kav') updateReverseResult(val, 1200, 1382.4, 2400);
+        if (unit === 'hin') updateReverseResult(val, 3600, 4147.2, 7200);
+        if (unit === 'seah') updateReverseResult(val, 7200, 8294.4, 14400);
+        if (unit === 'eifah') updateReverseResult(val, 21600, 24883.2, 43200);
+    }
+    
+    window.onload = function() { calculateRegular(); calculateReverse(); };
+</script>
+{% endblock %}

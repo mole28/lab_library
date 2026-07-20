@@ -1,0 +1,65 @@
+{% extends 'articles/base.html' %}
+
+{% block title %}עגלת קניות | הספרייה{% endblock %}
+
+{% block content %}
+<div class="container mt-5 mb-5" style="max-width: 900px;">
+    <h1 class="fw-bold mb-4 border-bottom pb-3" style="color: #2c3e50;">עגלת קניות</h1>
+    
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm">{{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    {% if items %}
+        <div class="card shadow-sm p-4 border-0 mb-4 content-card-bg">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>שם הספר</th>
+                            <th>מחיר יחידה</th>
+                            <th>כמות</th>
+                            <th>סה"כ</th>
+                            <th>הסר</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in items %}
+                        <tr>
+                            <td class="fw-bold">{{ item.book.title }}</td>
+                            <td>₪{{ item.book.price }}</td>
+                            <td>{{ item.quantity }}</td>
+                            <td class="fw-bold" style="color: #d4af37;">₪{{ item.get_total_price }}</td>
+                            <td>
+                                <a href="{% url 'articles:remove_from_cart' item.id %}" class="btn btn-sm btn-outline-danger" title="הסר מהעגלה">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="card shadow-sm p-4 border-0 content-card-bg text-end">
+            <h3 class="mb-3">סך הכל לתשלום: <span style="color: #d4af37;" class="fw-bold">₪{{ total_price }}</span></h3>
+            <div>
+                <a href="{% url 'articles:books' %}" class="btn btn-outline-secondary me-2">המשך לקנות</a>
+                <a href="{% url 'articles:checkout' %}" class="btn btn-primary fw-bold" style="background: linear-gradient(135deg, #2c3e50 0%, #3f4050 100%); border: none;">מעבר לקופה <i class="bi bi-arrow-left ms-2"></i></a>
+            </div>
+        </div>
+    {% else %}
+        <div class="alert alert-warning text-center p-5 shadow-sm">
+            <i class="bi bi-cart-x fs-1 d-block mb-3 text-muted"></i>
+            <h4 class="alert-heading">העגלה שלך ריקה</h4>
+            <p>לא הוספת עדיין ספרים לעגלת הקניות.</p>
+            <a href="{% url 'articles:books' %}" class="btn btn-outline-primary mt-3">חזרה לספריית הספרים</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

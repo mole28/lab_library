@@ -1,0 +1,21 @@
+{% extends 'articles/base.html' %}
+
+{% block title %}מחיקת מאמר | הספרייה{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 text-center card p-5 shadow-sm border-0">
+            <h2 class="text-danger mb-4 fw-bold">האם אתה בטוח?</h2>
+            <p class="lead">האם ברצונך למחוק לצמיתות את המאמר <strong>"{{ article.title }}"</strong>?</p>
+            <p class="text-muted small mb-4">פעולה זו היא בלתי הפיכה ולא ניתן לשחזר את התוכן לאחר מכן.</p>
+
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger px-4">כן, מחק את המאמר</button>
+                <a href="{% url 'articles:detail' article.pk %}" class="btn btn-outline-secondary px-4 ms-2">ביטול</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

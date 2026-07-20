@@ -1,0 +1,29 @@
+<div class="modal fade" id="aiGlobalNavModal" tabindex="-1" aria-hidden="true" dir="rtl">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 800px; width: 95%;">
+        <div class="modal-content" style="border-radius: 16px; overflow: hidden; border: none; box-shadow: 0 25px 60px rgba(0,0,0,0.3);">
+            <div class="modal-header ai-nav-header">
+                <h5 class="modal-title fw-bold">
+                    <svg viewBox="0 0 24 24" width="26" height="26" fill="white" class="me-2" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M19 9l1.25-2.75L23 5l-2.75-1.25L19 1l-1.25 2.75L15 5l2.75 1.25L19 9zm-7.5.5L9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5zM19 15l-1.25 2.75L15 19l2.75 1.25L19 23l1.25-2.75L23 19l-2.75-1.25L19 15z"/>
+                    </svg>
+                    עוזר התמצאות באתר
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div class="nav-chat-box m-3" id="globalNavChatBox">
+                    <div class="nav-chat-bubble nav-chat-bot">
+                        <strong style="font-size: 1.15em; color: #2575fc;">עוזר הניווט הדיגיטלי:</strong><br><br>
+                        שלום! אני מדריך האתר של ספריית לייבוביץ. מחפש להמיר מידות? רוצה לקרוא ספר ספציפי? צריכים למצוא עמוד כלשהו? שאל אותי ואכוון אותך מיד!
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" style="padding: 15px;">
+                <div class="input-group">
+                    <input type="text" id="globalNavInput" class="form-control" placeholder="מה תרצו למצוא באתר?..." style="border-radius: 50px 0 0 50px; padding: 15px 25px; font-size: 1.1rem;">
+                    <button class="btn-nav-send" type="button" onclick="sendGlobalNavMessage()" style="border-radius: 0 50px 50px 0; padding: 0 25px;"><i class="bi bi-search" style="font-size: 1.3rem;"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

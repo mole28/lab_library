@@ -1,0 +1,44 @@
+<div dir="rtl" style="font-family: 'Assistant', Arial, sans-serif; color: #333; background-color: #f4f5f7; padding: 40px 10px;">
+    <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; padding: 40px; border-top: 6px solid #d4af37; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+        <h2 style="color: #2c3e50; margin-top: 0;">תודה רבה על הזמנתך, {{ order.first_name }}!</h2>
+        <p style="font-size: 16px; line-height: 1.6;">הזמנתך התקבלה במערכת וממתינה כעת לאישור תשלום. להלן סיכום הפריטים שהזמנת (הזמנה #{{ order.id }}):</p>
+
+        <table style="width: 100%; border-collapse: collapse; margin: 25px 0;">
+            <thead>
+                <tr style="background-color: #f8f9fa; text-align: right;">
+                    <th style="padding: 12px; border-bottom: 2px solid #e9ecef;">שם הספר</th>
+                    <th style="padding: 12px; border-bottom: 2px solid #e9ecef;">כמות</th>
+                    <th style="padding: 12px; border-bottom: 2px solid #e9ecef;">מחיר</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in order.items.all %}
+                <tr>
+                    <td style="padding: 12px; border-bottom: 1px solid #e9ecef; font-weight: bold;">{{ item.book.title }}</td>
+                    <td style="padding: 12px; border-bottom: 1px solid #e9ecef;">{{ item.quantity }}</td>
+                    <td style="padding: 12px; border-bottom: 1px solid #e9ecef;">₪{{ item.get_cost }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="2" style="padding: 15px 12px; font-weight: bold; font-size: 18px;">סך הכל לתשלום:</td>
+                    <td style="padding: 15px 12px; font-weight: bold; font-size: 18px; color: #d4af37;">₪{{ order.total_paid }}</td>
+                </tr>
+            </tfoot>
+        </table>
+
+        <!-- קופסת הוראות תשלום -->
+        <div style="background-color: #fffdf5; padding: 20px; border-radius: 8px; border: 1px solid #fbe6a2; margin-top: 30px;">
+            <h3 style="margin-top: 0; color: #b58500; font-size: 18px;">הוראות תשלום</h3>
+            <p style="margin: 0; font-size: 15px; line-height: 1.5;">כדי שהספרים ייצאו אליך בהקדם, אנא העבר את הסכום באחת הדרכים הבאות:</p>
+            <ul style="margin-top: 10px; padding-right: 20px;">
+                <li style="margin-bottom: 5px;"><strong>אפליקציית ביט:</strong> למספר טלפון [הכנס מספר]</li>
+                <li><strong>העברה בנקאית:</strong> בנק [שם הבנק], סניף [מספר], חשבון [מספר] ע"ש משה.</li>
+            </ul>
+            <p style="margin: 10px 0 0; font-size: 14px; color: #dc3545; font-weight: bold;">* חשוב: אנא ציין את מספר ההזמנה (#{{ order.id }}) בהערות התשלום.</p>
+        </div>
+
+        <p style="margin-top: 40px; font-size: 14px; color: #6c757d; text-align: center; border-top: 1px solid #e9ecef; padding-top: 20px;">ספריית לייבוביץ • נשמח לעמוד לשירותך לכל שאלה.</p>
+    </div>
+</div>

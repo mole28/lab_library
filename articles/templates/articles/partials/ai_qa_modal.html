@@ -1,0 +1,26 @@
+<div class="modal fade" id="aiQAModal" tabindex="-1" aria-hidden="true" dir="rtl">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 800px; width: 95%;">
+        <div class="modal-content" style="border-radius: 16px; overflow: hidden; border: none; box-shadow: 0 25px 60px rgba(0,0,0,0.4);">
+            <div class="modal-header ai-qa-header">
+                <h5 class="modal-title fw-bold d-flex align-items-center gap-2">
+                    <i class="bi bi-robot fs-4"></i> שאלות ותשובות ע"י AI לכל התכנים שבאתר
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" style="filter: invert(1);"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div class="nav-chat-box m-3" id="globalQAChatBox">
+                    <div class="nav-chat-bubble qa-chat-bot">
+                        <strong style="font-size: 1.15em; color: #1e202c;">שאל את ה- AI - מבוסס על התכנים שבאתר <span style="font-weight: normal; font-size: 0.85em;">(אין לסמוך על זה למעשה)</span>:</strong><br><br>
+                        שלום! אני העוזר האקדמי. אני קורא את כל המאמרים והספרים שנמצאים באתר (ספריית לייבוביץ) ומעלה פסיקות, הלכות ומקורות לשאלות שלך.
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" style="padding: 15px;">
+                <div class="input-group">
+                    <input type="text" id="globalQAInput" class="form-control" placeholder="שאל שאלות בתוכן הספרים..." style="border-radius: 50px 0 0 50px; padding: 15px 25px; font-size: 1.1rem; border: 1px solid #d4af37;">
+                    <button class="btn-qa-send" type="button" onclick="sendQAMessage()" style="border-radius: 0 50px 50px 0; padding: 0 25px;"><i class="bi bi-send" style="font-size: 1.3rem;"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,452 @@
+{% extends 'articles/base.html' %}
+
+{% block title %}{{ book.title|striptags }} - הספרייה התורנית{% endblock %}
+
+{% block breadcrumbs %}
+<div class="container-fluid" style="max-width: 1400px;">
+    <nav aria-label="breadcrumb" class="mb-2 mt-4">
+      <ol class="breadcrumb" style="font-size: 1rem;">
+        <li class="breadcrumb-item">
+            <a href="{% url 'articles:list' %}" class="text-decoration-none text-muted"><i class="bi bi-house-door-fill"></i> ספריית לייבוביץ</a>
+        </li>
+        <li class="breadcrumb-item">
+            <a href="{% url 'articles:books' %}" class="text-decoration-none text-muted">ספרים</a>
+        </li>
+        <li class="breadcrumb-item active fw-bold text-dark" aria-current="page">{{ book.title|safe }}</li>
+      </ol>
+    </nav>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- כפתור מצב זן -->
+<button onclick="toggleZenMode()" id="zenToggleBtn" class="zen-toggle-btn" title="מצב קריאה נקי">
+    <i id="zenIcon" class="bi bi-arrows-fullscreen"></i>
+</button>
+
+<div class="container-fluid mt-2 mb-5" style="max-width: 1400px;">
+    <div class="row">
+        
+        <!-- תפריט צדדי: תוכן עניינים מרחף (יוסתר במצב זן) -->
+        <div class="col-lg-3 d-none d-lg-block hide-in-zen" id="toc-column">
+            <div class="sticky-top shadow-sm rounded content-card-bg p-3" style="top: 100px; max-height: 80vh; overflow-y: auto; scroll-behavior: smooth;" id="toc-container">
+                <h4 class="fw-bold mb-3 border-bottom pb-2 text-primary">תוכן עניינים</h4>
+                <div class="list-group list-group-flush" id="toc-list">
+                    
+                    {% if book.chapters.all or book.chapter_set.all %}
+                        {% for chapter in book.chapters.all %}
+                            <a href="#chapter-{{ chapter.id }}" class="list-group-item list-group-item-action fw-bold bg-light mt-2 rounded toc-link scrollspy-target text-dark">
+                                {{ chapter.title }}
+                            </a>
+                            {% for section in chapter.sections.all %}
+                                <!-- מעלים את השורות המיותרות מהתפריט -->
+                                {% if "גדר" in section.title and "נכתב" in section.title %}
+                                    <!-- מוסתר -->
+                                {% elif section.title == "מבוא" or section.title == " מבוא" or section.title == "מבוא " or section.title == chapter.title %}
+                                    <!-- מוסתר -->
+                                {% elif "תוכן הנספח" in section.title %}
+                                    <!-- מוסתר -->
+                                {% else %}
+                                    <!-- מציג את השאר כרגיל -->
+                                    {% if 'שיטת' in section.title or 'סיכום השיטות' in section.title or 'סיכום וביאור השיטות' in section.title or 'ביאור סברת השיטות' in section.title or 'סיכומא דמלתא' in section.title or 'סיכומא דמילתא' in section.title or 'בגדר' in section.title or 'בעניין תשבו כעין תדורו' in section.title or 'פתח דבר' in section.title %}
+                                        <a href="#section-{{ section.id }}" class="list-group-item list-group-item-action border-0 border-bottom ps-3 fw-bold text-dark toc-link scrollspy-target" style="font-size: 1.05rem; margin-top: 0.5rem; border-right: 3px solid #d4af37 !important;">{{ section.title }}</a>
+                                    {% else %}
+                                        <a href="#section-{{ section.id }}" class="list-group-item list-group-item-action border-0 border-bottom ps-4 text-truncate text-muted toc-link scrollspy-target" style="font-size: 0.95rem;">{{ section.title }}</a>
+                                    {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                        {% endfor %}
+                        
+                        {% for chapter in book.chapter_set.all %}
+                            <a href="#chapter-{{ chapter.id }}" class="list-group-item list-group-item-action fw-bold bg-light mt-2 rounded toc-link scrollspy-target text-dark">
+                                {{ chapter.title }}
+                            </a>
+                            {% for section in chapter.sections.all %}
+                                {% if "גדר" in section.title and "נכתב" in section.title %}
+                                    <!-- מוסתר -->
+                                {% elif section.title == "מבוא" or section.title == " מבוא" or section.title == "מבוא " or section.title == chapter.title %}
+                                    <!-- מוסתר -->
+                                {% elif "תוכן הנספח" in section.title %}
+                                    <!-- מוסתר -->
+                                {% else %}
+                                    {% if 'שיטת' in section.title or 'סיכום השיטות' in section.title or 'סיכום וביאור השיטות' in section.title or 'ביאור סברת השיטות' in section.title or 'סיכומא דמלתא' in section.title or 'סיכומא דמילתא' in section.title or 'בגדר' in section.title or 'בעניין תשבו כעין תדורו' in section.title or 'פתח דבר' in section.title %}
+                                        <a href="#section-{{ section.id }}" class="list-group-item list-group-item-action border-0 border-bottom ps-3 fw-bold text-dark toc-link scrollspy-target" style="font-size: 1.05rem; margin-top: 0.5rem; border-right: 3px solid #d4af37 !important;">{{ section.title }}</a>
+                                    {% else %}
+                                        <a href="#section-{{ section.id }}" class="list-group-item list-group-item-action border-0 border-bottom ps-4 text-truncate text-muted toc-link scrollspy-target" style="font-size: 0.95rem;">{{ section.title }}</a>
+                                    {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                        {% endfor %}
+                    {% endif %}
+                    
+                </div>
+            </div>
+        </div>
+
+        <!-- אזור הקריאה הראשי -->
+        <div class="col-lg-8 offset-lg-1 content-card-bg shadow-sm p-4 p-md-5 rounded" id="main-content-col">
+            
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <!-- כפתורי פעולה - יוסתרו במצב זן -->
+            <div class="d-flex justify-content-end gap-3 mb-1 hide-in-zen">
+                <button onclick="copyCitation()" class="btn-print btn btn-outline-warning border shadow-sm" title="העתק קישור למקור" style="color: #a67c52; border-color: #a67c52;">
+                    <i class="bi bi-link-45deg"></i> העתק מקור
+                </button>
+                <button onclick="window.print()" class="btn-print btn btn-light border shadow-sm" title="הדפס ספר">
+                    <i class="bi bi-printer"></i> הדפסה
+                </button>
+            </div>
+
+            <div class="text-center mb-5 mt-2">
+                <h1 class="display-4 fw-bold text-dark" style="font-family: 'Frank Ruhl Libre', serif;">{{ book.title|safe }}</h1>
+                <p class="text-muted fs-5">מאת: {{ book.author }}</p>
+                <hr class="w-25 mx-auto opacity-75">
+            </div>
+
+            <!-- כרטיסיית המכירה/תקציר - תוסתר במצב זן -->
+            {% if book.is_for_sale or book.cover_image %}
+            <div class="card mb-5 border-0 shadow-sm hide-in-zen" style="border-radius: 16px; overflow: hidden; border: 1px solid rgba(212,175,55,0.2) !important; background-color: transparent;">
+                <div class="row g-0">
+                    {% if book.cover_image %}
+                    <div class="col-md-4 d-flex align-items-center justify-content-center p-4 book-cover-bg">
+                        <img src="{{ book.cover_image.url }}" alt="{{ book.title }}" loading="lazy" class="img-fluid rounded shadow" style="max-height: 320px; object-fit: contain;">
+                    </div>
+                    {% endif %}
+                    
+                    <div class="col-md-{% if book.cover_image %}8{% else %}12{% endif %} p-4 p-md-5 d-flex flex-column justify-content-center summary-bg">
+                        
+                        {% if book.chapters.all or book.chapter_set.all %}
+                            {% if book.summary %}
+                                <h4 class="fw-bold mb-3" style="color: #a88132;"><i class="bi bi-info-circle me-2"></i>על הספר</h4>
+                                <div class="mb-4 text-dark" style="font-size: 1.15rem; line-height: 1.6;">
+                                    {{ book.summary|safe }}
+                                </div>
+                            {% endif %}
+                        {% endif %}
+                        
+                        {% if book.is_for_sale %}
+                        <div class="mt-auto p-4 rounded-3 d-flex flex-wrap justify-content-between align-items-center gap-3 buy-box-bg">
+                            <div>
+                                <span class="d-block text-muted small mb-1">מחיר לרכישה</span>
+                                <h2 class="fw-bold m-0" style="color: #a88132;">₪{{ book.price }}</h2>
+                            </div>
+                            <div>
+                                {% if book.stock > 0 %}
+                                    <a href="{% url 'articles:add_to_cart' book.id %}" class="btn px-4 py-2 rounded-pill fw-bold shadow-sm btn-cart-add" style="font-size: 1.1rem;">
+                                        <i class="bi bi-cart-plus me-2"></i> הוסף לעגלה
+                                    </a>
+                                {% else %}
+                                    <button class="btn btn-secondary px-4 py-2 rounded-pill fw-bold" disabled>אזל מהמלאי</button>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- קריאת הספר עצמו -->
+            <div class="book-reading-mode">
+                
+                {% if book.chapters.all %}
+                    {% for chapter in book.chapters.all %}
+                        <div class="chapter-section mb-5 pb-3 scrollspy-target" id="chapter-{{ chapter.id }}">
+                            <h2 class="fw-bold text-primary mb-4 border-bottom pb-2">{{ chapter.title }}</h2>
+                            {% for section in chapter.sections.all %}
+                                
+                                <div class="section-content mb-4 scrollspy-target" id="section-{{ section.id }}">
+                                    <!-- מעלים את הכותרות המיותרות מגוף הספר -->
+                                    {% if "גדר" in section.title and "נכתב" in section.title %}
+                                        <!-- מוסתר -->
+                                    {% elif section.title == "מבוא" or section.title == " מבוא" or section.title == "מבוא " or section.title == chapter.title %}
+                                        <!-- מוסתר -->
+                                    {% elif "תוכן הנספח" in section.title %}
+                                        <!-- מוסתר -->
+                                    {% else %}
+                                        {% if 'שיטת' in section.title or 'סיכום השיטות' in section.title or 'סיכום וביאור השיטות' in section.title or 'ביאור סברת השיטות' in section.title or 'סיכומא דמלתא' in section.title or 'סיכומא דמילתא' in section.title or 'בגדר' in section.title or 'בעניין תשבו כעין תדורו' in section.title or 'פתח דבר' in section.title %}
+                                            <h3 class="fw-bold text-dark mb-3 mt-5" style="border-bottom: 2px solid #a67c52; padding-bottom: 5px; display: inline-block;">{{ section.title }}</h3>
+                                        {% else %}
+                                            <h4 class="fw-semibold text-secondary mb-3">{{ section.title }}</h4>
+                                        {% endif %}
+                                    {% endif %}
+                                    
+                                    <!-- הטקסט עצמו -->
+                                    <div class="article-content">
+                                        {% if section.content %}{{ section.content|safe }}{% endif %}
+                                        {% if section.text %}{{ section.text|safe }}{% endif %}
+                                        {% if section.body %}{{ section.body|safe }}{% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+                    
+                {% elif book.chapter_set.all %}
+                    {% for chapter in book.chapter_set.all %}
+                        <div class="chapter-section mb-5 pb-3 scrollspy-target" id="chapter-{{ chapter.id }}">
+                            <h2 class="fw-bold text-primary mb-4 border-bottom pb-2">{{ chapter.title }}</h2>
+                            {% for section in chapter.sections.all %}
+                                {% if "גדר" in section.title and "נכתב" in section.title %}
+                                    <!-- מוסתר -->
+                                {% elif section.title == "מבוא" or section.title == " מבוא" or section.title == "מבוא " or section.title == chapter.title %}
+                                    <!-- מוסתר -->
+                                {% elif "תוכן הנספח" in section.title %}
+                                    <!-- מוסתר -->
+                                {% else %}
+                                    {% if 'שיטת' in section.title or 'סיכום השיטות' in section.title or 'סיכום וביאור השיטות' in section.title or 'ביאור סברת השיטות' in section.title or 'סיכומא דמלתא' in section.title or 'סיכומא דמילתא' in section.title or 'בגדר' in section.title or 'בעניין תשבו כעין תדורו' in section.title or 'פתח דבר' in section.title %}
+                                        <h3 class="fw-bold text-dark mb-3 mt-5" style="border-bottom: 2px solid #a67c52; padding-bottom: 5px; display: inline-block;">{{ section.title }}</h3>
+                                    {% else %}
+                                        <h4 class="fw-semibold text-secondary mb-3">{{ section.title }}</h4>
+                                    {% endif %}
+                                {% endif %}
+                                <div class="article-content">
+                                    {% if section.content %}{{ section.content|safe }}{% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+                    
+                {% else %}
+                    {% if book.summary %}
+                        <div class="article-content" id="auto-toc-content">
+                            {{ book.summary|safe }}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info text-center py-4 rounded-3 shadow-sm hide-in-zen">
+                            <i class="bi bi-info-circle fs-1 d-block mb-2"></i>
+                            תוכן הספר טרם הוזן למערכת.
+                        </div>
+                    {% endif %}
+                {% endif %}
+                
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    html { scroll-behavior: smooth; }
+    .book-reading-mode { font-family: 'Frank Ruhl Libre', serif; font-size: 1.3rem; line-height: 2; color: #2c3e50; }
+    .book-cover-bg { background-color: rgba(0,0,0,0.02); border-left: 1px solid rgba(0,0,0,0.05); }
+    .summary-bg { background-color: #fafbfc; }
+    .buy-box-bg { background: rgba(212, 175, 55, 0.08); border: 1px dashed rgba(212, 175, 55, 0.4); }
+    .btn-cart-add { background: linear-gradient(135deg, #d4af37 0%, #b5952f 100%); color: #1e202c; border: none; transition: transform 0.2s ease, box-shadow 0.2s ease; }
+    .btn-cart-add:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(212, 175, 55, 0.4) !important; color: #1e202c; }
+    
+    .toc-link { transition: all 0.3s ease; border-right: 4px solid transparent; }
+    .toc-link.active-gold { background-color: #fdfbf7 !important; color: #d4af37 !important; border-right: 4px solid #d4af37 !important; font-weight: 800 !important; box-shadow: inset 0 0 10px rgba(212, 175, 55, 0.05); }
+    
+    .content-card-bg { background-color: #ffffff; transition: all 0.4s ease; }
+    
+    body.dark-mode .text-primary { color: #d4af37 !important; }
+    body.dark-mode .text-dark { color: #f8fafc !important; }
+    body.dark-mode .text-secondary { color: #cbd5e1 !important; }
+    body.dark-mode .bg-light { background-color: #334155 !important; color: #f8fafc !important; }
+    body.dark-mode .list-group-item { background-color: transparent !important; color: #cbd5e1 !important; border-color: rgba(255,255,255,0.1) !important; }
+    body.dark-mode .book-cover-bg { background-color: rgba(255,255,255,0.02); border-left-color: rgba(255,255,255,0.05); }
+    body.dark-mode .summary-bg { background-color: #1e293b; }
+    body.dark-mode .toc-link.active-gold { background-color: rgba(212, 175, 55, 0.1) !important; color: #d4af37 !important; }
+    body.dark-mode .content-card-bg { background-color: #1e293b; border: 1px solid rgba(255,255,255,0.05) !important; }
+    body.dark-mode .article-content { color: #cbd5e1 !important; }
+
+    /* ============================================== */
+    /* מערכת מצב קריאה נקי (Zen Mode)                 */
+    /* ============================================== */
+    .zen-toggle-btn {
+        position: fixed;
+        bottom: 110px; /* הועלה למעלה כדי לא להסתיר את כפתור החזרה לראש העמוד */
+        left: 35px;    /* יושב בדיוק בקו אחד מעל כפתור החזרה למעלה */
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #a67c52 0%, #d4af37 100%);
+        color: white;
+        border: none;
+        box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
+        font-size: 1.5rem;
+        z-index: 10500;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+    html[dir="ltr"] .zen-toggle-btn { left: auto; right: 35px; }
+    .zen-toggle-btn:hover { transform: scale(1.1); box-shadow: 0 6px 20px rgba(212, 175, 55, 0.6); }
+    
+    /* הסתרת כל רעשי הרקע */
+    body.zen-mode .top-navbar,
+    body.zen-mode .site-footer,
+    body.zen-mode .hero-section,
+    body.zen-mode .acc-toggle-btn,
+    body.zen-mode .global-ai-side-btn,
+    body.zen-mode .qa-floating-pill,
+    body.zen-mode .breadcrumb,
+    body.zen-mode #reading-progress-container,
+    body.zen-mode .hide-in-zen {
+        display: none !important;
+    }
+    
+    /* עיצוב הדף למצב קריאה בספר */
+    body.zen-mode { background-color: #fdfbf7 !important; }
+    body.dark-mode.zen-mode { background-color: #0f172a !important; }
+    
+    body.zen-mode .content-card-bg {
+        box-shadow: none !important;
+        background-color: transparent !important;
+        border: none !important;
+    }
+    
+    /* מירכוז תוכן הספר */
+    body.zen-mode #main-content-col {
+        max-width: 850px !important;
+        margin: 0 auto !important;
+        flex: 0 0 100% !important;
+        padding-top: 5vh !important;
+        padding-bottom: 15vh !important;
+    }
+    
+    body.zen-mode .zen-toggle-btn {
+        background: #3f4050;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+</style>
+
+<script>
+    function toggleZenMode() {
+        document.body.classList.toggle('zen-mode');
+        const icon = document.getElementById('zenIcon');
+        const btn = document.getElementById('zenToggleBtn');
+        
+        if (document.body.classList.contains('zen-mode')) {
+            icon.classList.remove('bi-arrows-fullscreen');
+            icon.classList.add('bi-fullscreen-exit');
+            btn.title = "יציאה ממצב קריאה";
+            window.scrollTo({ top: 0, behavior: 'smooth' }); 
+        } else {
+            icon.classList.remove('bi-fullscreen-exit');
+            icon.classList.add('bi-arrows-fullscreen');
+            btn.title = "מצב קריאה נקי";
+        }
+    }
+
+    function copyCitation() {
+        const title = "{{ book.title|striptags|escapejs }}";
+        const author = "{{ book.author|default:'ספריית לייבוביץ'|escapejs }}";
+        const url = window.location.href;
+        const citationText = `"${title}" / מאת: ${author}\nמתוך אתר ספריית לייבוביץ.\nקישור למקור: ${url}`;
+        navigator.clipboard.writeText(citationText).then(function() {
+            alert("המקור הועתק ללוח בהצלחה!");
+        }).catch(function(err) {
+            console.error('שגיאה בהעתקת המקור: ', err);
+        });
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        const tocList = document.getElementById('toc-list');
+        const autoContent = document.getElementById('auto-toc-content');
+        const tocColumn = document.getElementById('toc-column');
+        const mainContentCol = document.getElementById('main-content-col');
+
+        if (autoContent && tocList && tocList.children.length === 0) {
+            const headers = autoContent.querySelectorAll('h1, h2, h3, h4, h5, h6');
+            
+            if (headers.length > 0) {
+                headers.forEach((header, index) => {
+                    const id = 'auto-header-' + index;
+                    header.id = id;
+                    header.classList.add('scrollspy-target');
+
+                    const link = document.createElement('a');
+                    link.href = '#' + id;
+                    link.className = 'list-group-item list-group-item-action text-truncate toc-link';
+                    
+                    const text = header.innerText.trim();
+                    
+                    const isMainChapter = text.startsWith("חלק") || 
+                                          text.startsWith("פרק") || 
+                                          text.startsWith('פ"ח') || 
+                                          text.startsWith("סימן") || 
+                                          text.includes("נספח") || 
+                                          text === "הקדמה" || 
+                                          text === "מבוא";
+                    
+                    const isHighlightedSub = text.includes("שיטת") || 
+                                             text.includes("סיכום השיטות") || 
+                                             text.includes("סיכום וביאור השיטות") ||
+                                             text.includes("ביאור סברת השיטות") ||
+                                             text.includes("סיכומא דמלתא") ||
+                                             text.includes("סיכומא דמילתא") ||
+                                             text.includes("בגדר") ||
+                                             text.includes("בעניין תשבו כעין תדורו") ||
+                                             text.includes("פתח דבר");
+
+                    if (isMainChapter) {
+                        link.classList.add('fw-bold', 'bg-light', 'mt-2', 'rounded', 'text-dark');
+                    } else if (isHighlightedSub) {
+                        link.classList.add('ps-3', 'fw-bold', 'text-dark', 'border-0', 'border-bottom');
+                        link.style.fontSize = '1.05rem';
+                        link.style.marginTop = '0.5rem';
+                        link.style.borderRight = '3px solid #d4af37';
+                    } else {
+                        link.classList.add('ps-4', 'border-0', 'border-bottom', 'text-muted');
+                        link.style.fontSize = '0.95rem';
+                    }
+                    
+                    link.innerText = text;
+                    tocList.appendChild(link);
+                });
+            } else {
+                if (tocColumn) {
+                    tocColumn.style.display = 'none';
+                    tocColumn.classList.remove('d-lg-block');
+                }
+                if (mainContentCol) {
+                    mainContentCol.classList.remove('col-lg-8', 'offset-lg-1');
+                    mainContentCol.classList.add('col-lg-12');
+                }
+            }
+        } else if (!autoContent && (!tocList || tocList.children.length === 0)) {
+            if (tocColumn) {
+                tocColumn.style.display = 'none';
+                tocColumn.classList.remove('d-lg-block');
+            }
+            if (mainContentCol) {
+                mainContentCol.classList.remove('col-lg-8', 'offset-lg-1');
+                mainContentCol.classList.add('col-lg-12');
+            }
+        }
+
+        const targets = document.querySelectorAll(".scrollspy-target");
+        const navLinks = document.querySelectorAll(".toc-link");
+
+        const observerOptions = {
+            root: null,
+            rootMargin: "-10% 0px -70% 0px",
+            threshold: 0
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    navLinks.forEach(link => link.classList.remove("active-gold"));
+                    const id = entry.target.getAttribute("id");
+                    const activeLink = document.querySelector(`.toc-link[href="#${id}"]`);
+                    if (activeLink) activeLink.classList.add("active-gold");
+                }
+            });
+        }, observerOptions);
+
+        targets.forEach(target => observer.observe(target));
+    });
+</script>
+{% endblock %}

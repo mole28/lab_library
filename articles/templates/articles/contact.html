@@ -1,0 +1,167 @@
+{% extends 'articles/base.html' %}
+
+{% block title %}צור קשר | הספרייה{% endblock %}
+
+{% block hero %}
+<div class="hero-section" style="height: 280px;">
+    <div class="hero-overlay"></div>
+    <div class="hero-content text-center w-100">
+        <h1 class="text-white mb-0 fw-bold display-4" style="text-shadow: 2px 2px 8px rgba(0,0,0,0.8);">צור קשר</h1>
+        <p class="text-white mt-2 fs-4" style="text-shadow: 1px 1px 5px rgba(0,0,0,0.8);">השארת פניה, הודעה או שאלה</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb" class="mb-4 mt-3">
+    <ol class="breadcrumb" style="font-size: 1rem;">
+        <li class="breadcrumb-item">
+            <a href="{% url 'articles:list' %}" class="text-decoration-none text-muted"><i class="bi bi-house-door-fill"></i> ספריית לייבוביץ</a>
+        </li>
+        <li class="breadcrumb-item active fw-bold" aria-current="page">צור קשר</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<style>
+    /* ========================================== */
+    /* עיצוב יוקרתי לטופס צור קשר */
+    /* ========================================== */
+    .contact-card {
+        background-color: #ffffff;
+        border: none;
+        border-top: 4px solid #d4af37; /* פס זהב עליון */
+        border-radius: 16px;
+        box-shadow: 0 15px 40px rgba(0,0,0,0.06); /* הצללה רכה ועמוקה */
+        overflow: hidden;
+    }
+    .form-header {
+        text-align: center;
+        margin-bottom: 2.5rem;
+    }
+    .form-header h2 {
+        color: #2c3e50;
+        font-weight: 700;
+        font-size: 2.2rem;
+    }
+    .form-header .separator {
+        width: 60px;
+        height: 3px;
+        background-color: #d4af37;
+        margin: 15px auto;
+        border-radius: 2px;
+    }
+    
+    /* שדות ההזנה */
+    .lux-input {
+        background-color: #f8f9fa; /* רקע אפרפר עדין שמבליט את השדה */
+        border: 1px solid #e2e8f0; /* מסגרת ברורה ונקייה */
+        border-radius: 10px;
+        padding: 16px 20px;
+        font-size: 1.15rem;
+        color: #2c3e50;
+        transition: all 0.3s ease;
+        width: 100%;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); /* צל פנימי קליל */
+    }
+    .lux-input:focus {
+        background-color: #ffffff; /* הופך ללבן נקי בפוקוס */
+        border-color: #d4af37;
+        box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.15); /* הילה זהובה בפוקוס */
+        outline: none;
+    }
+    .lux-input::placeholder {
+        color: #94a3b8;
+    }
+
+    /* כפתור שליחה יוקרתי (תואם לכפתור ה-AI) */
+    .lux-btn {
+        background: linear-gradient(145deg, #1e202c 0%, #2a2d3e 100%);
+        color: #d4af37;
+        border: 1px solid rgba(212, 175, 55, 0.5);
+        border-radius: 50px;
+        padding: 14px 60px;
+        font-size: 1.3rem;
+        font-weight: 700;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .lux-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(212, 175, 55, 0.3);
+        border-color: #d4af37;
+        color: #ffffff;
+    }
+</style>
+
+<div class="container mb-5 pb-5">
+    <div class="row">
+        <!-- 100% רוחב כדי להתיישר בול עם הסרגל העליון -->
+        <div class="col-12">
+            <div class="contact-card p-4 p-md-5">
+                
+                <div class="form-header">
+                    <h2>השארת הודעה או שאלה</h2>
+                    <div class="separator"></div>
+                    <p class="text-muted fs-5">מלאו את הפרטים מטה ונחזיר תשובה בהקדם האפשרי</p>
+                </div>
+                
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show fs-5" role="alert" style="border-radius: 10px;">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                <form action="{% url 'articles:contact' %}" method="POST" id="contact-form">
+                    {% csrf_token %}
+                    <input type="hidden" id="g-recaptcha-response" name="g-recaptcha-response">
+
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <input type="text" class="lux-input" name="name" placeholder="שם מלא*" required>
+                        </div>
+                        <div class="col-md-6">
+                            <input type="text" class="lux-input" name="phone" placeholder="טלפון">
+                        </div>
+                        <div class="col-md-6">
+                            <input type="text" inputmode="email" class="lux-input" name="email" placeholder='דוא"ל*' required>
+                        </div>
+                        <div class="col-md-6">
+                            <input type="text" class="lux-input" name="subject" placeholder="נושא פנייה*" required>
+                        </div>
+                        <div class="col-12">
+                            <textarea class="lux-input" name="message" rows="6" placeholder="תוכן ההודעה..." required></textarea>
+                        </div>
+                        <div class="col-12 text-center mt-5">
+                            <button type="submit" class="lux-btn">
+                                <i class="bi bi-send"></i> שלח הודעה
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    grecaptcha.ready(function() {
+        document.getElementById('contact-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            grecaptcha.execute('6LfC_VQtAAAAAGC81qfJWQpnMGlbgaTD91finoP6', {action: 'submit'}).then(function(token) {
+                document.getElementById('g-recaptcha-response').value = token;
+                document.getElementById('contact-form').submit();
+            });
+        });
+    });
+</script>
+{% endblock %}

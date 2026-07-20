@@ -1,0 +1,225 @@
+{% extends 'articles/base.html' %}
+
+{% block title %}פרשת שבוע | הספרייה{% endblock %}
+
+{% block hero %}
+<div class="hero-section" style="height: 280px;">
+    <div class="hero-overlay"></div>
+    <div class="hero-content text-center w-100">
+        <h1 class="text-white mb-0 fw-bold display-4" style="text-shadow: 2px 2px 8px rgba(0,0,0,0.8);">פרשת שבוע</h1>
+        <p class="text-white mt-2 fs-4" style="text-shadow: 1px 1px 5px rgba(0,0,0,0.8);">עיון וחקר לפי פרשות השבוע</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="container-fluid mt-4" style="max-width: 1200px;">
+    <nav aria-label="breadcrumb" class="mb-2">
+      <ol class="breadcrumb" style="font-size: 1rem;">
+        <li class="breadcrumb-item">
+            <a href="{% url 'articles:list' %}" class="text-decoration-none text-muted"><i class="bi bi-house-door-fill"></i> ספריית לייבוביץ</a>
+        </li>
+        <li class="breadcrumb-item active fw-bold text-dark" aria-current="page">פרשת שבוע</li>
+        {% if selected_parasha %}
+        <li class="breadcrumb-item active fw-bold" style="color: #a67c52;" aria-current="page">פרשת {{ selected_parasha }}</li>
+        {% endif %}
+      </ol>
+    </nav>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-2 mb-5" style="max-width: 1200px;">
+    
+    {% if selected_parasha %}
+        <!-- הצגת המאמרים של הפרשה הנבחרת -->
+        <div class="mb-5 pb-4 border-bottom reveal-up" id="parasha-articles">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="fw-bold m-0" style="color: #2c3e50;">מאמרים על פרשת <span style="color: #a67c52;">{{ selected_parasha }}</span></h2>
+                
+                <!-- התיקון שמונע את הקריסה! (החלפנו ל "?") -->
+                <a href="?" class="btn btn-outline-secondary rounded-pill btn-sm fw-bold px-3">
+                    <i class="bi bi-arrow-right me-1"></i> חזור לכל הפרשות
+                </a>
+            </div>
+            
+            <div class="row g-4">
+                {% for article in articles %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 p-4 border shadow-sm article-card content-card-bg" style="border-radius: 12px;">
+                        <h4 class="fw-bold mb-3" style="color: #1a252f;">{{ article.title|safe }}</h4>
+                        <p class="text-muted small mb-3 border-bottom pb-2"><i class="bi bi-calendar3 me-1"></i> נוצר בתאריך: {{ article.hebrew_date }}</p>
+                        
+                        <!-- תקציר המאמר -->
+                        <div class="text-muted mb-4">
+                            {% if article.content %}
+                                {{ article.content|striptags|truncatewords:25|safe }}
+                            {% elif article.text %}
+                                {{ article.text|striptags|truncatewords:25|safe }}
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mt-auto">
+                            <a href="{% url 'articles:detail' article.pk %}" class="btn btn-outline-dark rounded-pill w-100 fw-semibold">קרא מאמר מלא</a>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12 text-center py-5">
+                    <div class="alert alert-light border shadow-sm d-inline-block px-5 py-4 rounded-4 text-center">
+                        <i class="bi bi-journal-x fs-1 text-muted d-block mb-3"></i>
+                        <h4 class="fw-bold text-dark">עדיין אין מאמרים בפרשת {{ selected_parasha }}</h4>
+                        <p class="text-muted mb-0">בקרוב יעלו תכנים חדשים לפרשה זו.</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- טבלת פרשות השבוע -->
+    <div class="card shadow-sm border-0 reveal-up" style="border-radius: 16px; overflow: hidden;">
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover text-center m-0 parasha-table" style="table-layout: fixed; min-width: 800px;">
+                <thead style="background-color: #3f4050; color: white;">
+                    <tr>
+                        <th class="py-3 fs-5" style="width: 20%;">ספר בראשית</th>
+                        <th class="py-3 fs-5" style="width: 20%;">ספר שמות</th>
+                        <th class="py-3 fs-5" style="width: 20%;">ספר ויקרא</th>
+                        <th class="py-3 fs-5" style="width: 20%;">ספר במדבר</th>
+                        <th class="py-3 fs-5" style="width: 20%;">ספר דברים</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white">
+                    <tr>
+                        <td><a href="?p=בראשית#parasha-articles" class="parasha-link {% if selected_parasha == 'בראשית' %}active{% endif %}">פרשת בראשית</a></td>
+                        <td><a href="?p=שמות#parasha-articles" class="parasha-link {% if selected_parasha == 'שמות' %}active{% endif %}">פרשת שמות</a></td>
+                        <td><a href="?p=ויקרא#parasha-articles" class="parasha-link {% if selected_parasha == 'ויקרא' %}active{% endif %}">פרשת ויקרא</a></td>
+                        <td><a href="?p=במדבר#parasha-articles" class="parasha-link {% if selected_parasha == 'במדבר' %}active{% endif %}">פרשת במדבר</a></td>
+                        <td><a href="?p=דברים#parasha-articles" class="parasha-link {% if selected_parasha == 'דברים' %}active{% endif %}">פרשת דברים</a></td>
+                    </tr>
+                    <tr>
+                        <td><a href="?p=נח#parasha-articles" class="parasha-link {% if selected_parasha == 'נח' %}active{% endif %}">פרשת נח</a></td>
+                        <td><a href="?p=וארא#parasha-articles" class="parasha-link {% if selected_parasha == 'וארא' %}active{% endif %}">פרשת וארא</a></td>
+                        <td><a href="?p=צו#parasha-articles" class="parasha-link {% if selected_parasha == 'צו' %}active{% endif %}">פרשת צו</a></td>
+                        <td><a href="?p=נשא#parasha-articles" class="parasha-link {% if selected_parasha == 'נשא' %}active{% endif %}">פרשת נשא</a></td>
+                        <td><a href="?p=ואתחנן#parasha-articles" class="parasha-link {% if selected_parasha == 'ואתחנן' %}active{% endif %}">פרשת ואתחנן</a></td>
+                    </tr>
+                    <tr>
+                        <td><a href="?p=לך לך#parasha-articles" class="parasha-link {% if selected_parasha == 'לך לך' %}active{% endif %}">פרשת לך לך</a></td>
+                        <td><a href="?p=בא#parasha-articles" class="parasha-link {% if selected_parasha == 'בא' %}active{% endif %}">פרשת בא</a></td>
+                        <td><a href="?p=שמיני#parasha-articles" class="parasha-link {% if selected_parasha == 'שמיני' %}active{% endif %}">פרשת שמיני</a></td>
+                        <td><a href="?p=בהעלותך#parasha-articles" class="parasha-link {% if selected_parasha == 'בהעלותך' %}active{% endif %}">פרשת בהעלותך</a></td>
+                        <td><a href="?p=עקב#parasha-articles" class="parasha-link {% if selected_parasha == 'עקב' %}active{% endif %}">פרשת עקב</a></td>
+                    </tr>
+                    <tr>
+                        <td><a href="?p=וירא#parasha-articles" class="parasha-link {% if selected_parasha == 'וירא' %}active{% endif %}">פרשת וירא</a></td>
+                        <td><a href="?p=בשלח#parasha-articles" class="parasha-link {% if selected_parasha == 'בשלח' %}active{% endif %}">פרשת בשלח</a></td>
+                        <td><a href="?p=תזריע#parasha-articles" class="parasha-link {% if selected_parasha == 'תזריע' %}active{% endif %}">פרשת תזריע</a></td>
+                        <td><a href="?p=שלח לך#parasha-articles" class="parasha-link {% if selected_parasha == 'שלח לך' %}active{% endif %}">פרשת שלח לך</a></td>
+                        <td><a href="?p=ראה#parasha-articles" class="parasha-link {% if selected_parasha == 'ראה' %}active{% endif %}">פרשת ראה</a></td>
+                    </tr>
+                    <tr>
+                        <td><a href="?p=חיי שרה#parasha-articles" class="parasha-link {% if selected_parasha == 'חיי שרה' %}active{% endif %}">פרשת חיי שרה</a></td>
+                        <td><a href="?p=יתרו#parasha-articles" class="parasha-link {% if selected_parasha == 'יתרו' %}active{% endif %}">פרשת יתרו</a></td>
+                        <td><a href="?p=מצורע#parasha-articles" class="parasha-link {% if selected_parasha == 'מצורע' %}active{% endif %}">פרשת מצורע</a></td>
+                        <td><a href="?p=קרח#parasha-articles" class="parasha-link {% if selected_parasha == 'קרח' %}active{% endif %}">פרשת קרח</a></td>
+                        <td><a href="?p=שופטים#parasha-articles" class="parasha-link {% if selected_parasha == 'שופטים' %}active{% endif %}">פרשת שופטים</a></td>
+                    </tr>
+                    <tr>
+                        <td><a href="?p=תולדות#parasha-articles" class="parasha-link {% if selected_parasha == 'תולדות' %}active{% endif %}">פרשת תולדות</a></td>
+                        <td><a href="?p=משפטים#parasha-articles" class="parasha-link {% if selected_parasha == 'משפטים' %}active{% endif %}">פרשת משפטים</a></td>
+                        <td><a href="?p=אחרי מות#parasha-articles" class="parasha-link {% if selected_parasha == 'אחרי מות' %}active{% endif %}">פרשת אחרי מות</a></td>
+                        <td><a href="?p=חקת#parasha-articles" class="parasha-link {% if selected_parasha == 'חקת' %}active{% endif %}">פרשת חקת</a></td>
+                        <td><a href="?p=כי תצא#parasha-articles" class="parasha-link {% if selected_parasha == 'כי תצא' %}active{% endif %}">פרשת כי תצא</a></td>
+                    </tr>
+                    <tr>
+                        <td><a href="?p=ויצא#parasha-articles" class="parasha-link {% if selected_parasha == 'ויצא' %}active{% endif %}">פרשת ויצא</a></td>
+                        <td><a href="?p=תרומה#parasha-articles" class="parasha-link {% if selected_parasha == 'תרומה' %}active{% endif %}">פרשת תרומה</a></td>
+                        <td><a href="?p=קדושים#parasha-articles" class="parasha-link {% if selected_parasha == 'קדושים' %}active{% endif %}">פרשת קדושים</a></td>
+                        <td><a href="?p=בלק#parasha-articles" class="parasha-link {% if selected_parasha == 'בלק' %}active{% endif %}">פרשת בלק</a></td>
+                        <td><a href="?p=כי תבוא#parasha-articles" class="parasha-link {% if selected_parasha == 'כי תבוא' %}active{% endif %}">פרשת כי תבוא</a></td>
+                    </tr>
+                    <tr>
+                        <td><a href="?p=וישלח#parasha-articles" class="parasha-link {% if selected_parasha == 'וישלח' %}active{% endif %}">פרשת וישלח</a></td>
+                        <td><a href="?p=תצוה#parasha-articles" class="parasha-link {% if selected_parasha == 'תצוה' %}active{% endif %}">פרשת תצוה</a></td>
+                        <td><a href="?p=אמור#parasha-articles" class="parasha-link {% if selected_parasha == 'אמור' %}active{% endif %}">פרשת אמור</a></td>
+                        <td><a href="?p=פינחס#parasha-articles" class="parasha-link {% if selected_parasha == 'פינחס' %}active{% endif %}">פרשת פינחס</a></td>
+                        <td><a href="?p=ניצבים#parasha-articles" class="parasha-link {% if selected_parasha == 'ניצבים' %}active{% endif %}">פרשת ניצבים</a></td>
+                    </tr>
+                    <tr>
+                        <td><a href="?p=וישב#parasha-articles" class="parasha-link {% if selected_parasha == 'וישב' %}active{% endif %}">פרשת וישב</a></td>
+                        <td><a href="?p=כי תשא#parasha-articles" class="parasha-link {% if selected_parasha == 'כי תשא' %}active{% endif %}">פרשת כי תשא</a></td>
+                        <td><a href="?p=בהר#parasha-articles" class="parasha-link {% if selected_parasha == 'בהר' %}active{% endif %}">פרשת בהר</a></td>
+                        <td><a href="?p=מטות#parasha-articles" class="parasha-link {% if selected_parasha == 'מטות' %}active{% endif %}">פרשת מטות</a></td>
+                        <td><a href="?p=וילך#parasha-articles" class="parasha-link {% if selected_parasha == 'וילך' %}active{% endif %}">פרשת וילך</a></td>
+                    </tr>
+                    <tr>
+                        <td><a href="?p=מקץ#parasha-articles" class="parasha-link {% if selected_parasha == 'מקץ' %}active{% endif %}">פרשת מקץ</a></td>
+                        <td><a href="?p=ויקהל#parasha-articles" class="parasha-link {% if selected_parasha == 'ויקהל' %}active{% endif %}">פרשת ויקהל</a></td>
+                        <td><a href="?p=בחוקתי#parasha-articles" class="parasha-link {% if selected_parasha == 'בחוקתי' %}active{% endif %}">פרשת בחוקתי</a></td>
+                        <td><a href="?p=מסעי#parasha-articles" class="parasha-link {% if selected_parasha == 'מסעי' %}active{% endif %}">פרשת מסעי</a></td>
+                        <td><a href="?p=האזינו#parasha-articles" class="parasha-link {% if selected_parasha == 'האזינו' %}active{% endif %}">פרשת האזינו</a></td>
+                    </tr>
+                    <tr>
+                        <td><a href="?p=ויגש#parasha-articles" class="parasha-link {% if selected_parasha == 'ויגש' %}active{% endif %}">פרשת ויגש</a></td>
+                        <td><a href="?p=פקודי#parasha-articles" class="parasha-link {% if selected_parasha == 'פקודי' %}active{% endif %}">פרשת פקודי</a></td>
+                        <td></td>
+                        <td></td>
+                        <td><a href="?p=וזאת הברכה#parasha-articles" class="parasha-link {% if selected_parasha == 'וזאת הברכה' %}active{% endif %}">פרשת וזאת הברכה</a></td>
+                    </tr>
+                    <tr>
+                        <td><a href="?p=ויחי#parasha-articles" class="parasha-link {% if selected_parasha == 'ויחי' %}active{% endif %}">פרשת ויחי</a></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* עיצוב כרטיסי המאמרים */
+    .article-card { transition: all 0.3s ease; border: 1px solid rgba(166, 124, 82, 0.2) !important; }
+    .article-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(166, 124, 82, 0.15) !important; border-color: #a67c52 !important;}
+    
+    /* עיצוב הטבלה והקישורים */
+    .parasha-table th { border-bottom: 3px solid #a67c52; font-family: 'Assistant', sans-serif; font-weight: 800; }
+    .parasha-table td { padding: 0; vertical-align: middle; border-color: #f0f0f0; }
+    
+    .parasha-link { 
+        display: block; 
+        padding: 16px 10px; 
+        color: #4a4a4a; 
+        text-decoration: none; 
+        font-size: 1.15rem; 
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+    .parasha-link:hover { 
+        background-color: #fdfaf5; 
+        color: #a67c52; 
+        font-weight: bold;
+        text-decoration: none;
+    }
+    
+    .parasha-link.active {
+        background-color: #a67c52;
+        color: white;
+        font-weight: bold;
+        box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    /* תמיכה במצב לילה */
+    body.dark-mode .parasha-table thead th { background-color: #1e293b !important; border-bottom-color: #d4af37; }
+    body.dark-mode .parasha-table tbody { background-color: #0f172a !important; }
+    body.dark-mode .parasha-table td { border-color: rgba(255,255,255,0.05); }
+    body.dark-mode .parasha-link { color: #cbd5e1; }
+    body.dark-mode .parasha-link:hover { background-color: rgba(212, 175, 55, 0.1); color: #d4af37; }
+    body.dark-mode .parasha-link.active { background-color: #d4af37; color: #0f172a; }
+    body.dark-mode .card, body.dark-mode .alert { background-color: #1e293b; border-color: rgba(255,255,255,0.1); color: #f8fafc; }
+</style>
+{% endblock %}

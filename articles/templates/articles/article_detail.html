@@ -1,0 +1,180 @@
+{% extends 'articles/base.html' %}
+
+{% block title %}{{ article.title|striptags }} - הספרייה התורנית{% endblock %}
+
+{% block breadcrumbs %}
+<div class="container-fluid" style="max-width: 1400px;">
+    <nav aria-label="breadcrumb" class="mb-2 mt-4">
+      <ol class="breadcrumb" style="font-size: 1rem;">
+        <li class="breadcrumb-item">
+            <a href="{% url 'articles:list' %}" class="text-decoration-none text-muted"><i class="bi bi-house-door-fill"></i> ספריית לייבוביץ</a>
+        </li>
+        <li class="breadcrumb-item">
+            <a href="{% url 'articles:list' %}" class="text-decoration-none text-muted">מאמרים</a>
+        </li>
+        <li class="breadcrumb-item active fw-bold text-dark" aria-current="page">{{ article.title|safe }}</li>
+      </ol>
+    </nav>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- כפתור מצב זן -->
+<button onclick="toggleZenMode()" id="zenToggleBtn" class="zen-toggle-btn" title="מצב קריאה נקי">
+    <i id="zenIcon" class="bi bi-arrows-fullscreen"></i>
+</button>
+
+<div class="container-fluid mt-2 mb-5" style="max-width: 1400px;">
+    <div class="row justify-content-center">
+        <!-- אזור הקריאה הראשי -->
+        <div class="col-lg-10 content-card-bg shadow-sm p-4 p-md-5 rounded" id="main-content-col">
+            
+            <!-- כפתורי הפעולה יוסתרו במצב קריאה (hide-in-zen) -->
+            <div class="d-flex justify-content-end gap-3 mb-4 hide-in-zen">
+                <button onclick="copyCitation()" class="btn-print btn btn-outline-warning border shadow-sm" title="העתק קישור למקור" style="color: #a67c52; border-color: #a67c52;">
+                    <i class="bi bi-link-45deg"></i> העתק מקור
+                </button>
+                <button onclick="window.print()" class="btn-print btn btn-light border shadow-sm" title="הדפס מאמר">
+                    <i class="bi bi-printer"></i> הדפסה
+                </button>
+                <!-- רק מנהל ראשי יראה את הכפתור הזה -->
+                {% if user.is_superuser %}
+                    <a href="{% url 'articles:edit' article.pk %}" class="btn btn-outline-secondary shadow-sm"><i class="bi bi-pencil"></i> ערוך מאמר</a>
+                {% endif %}
+            </div>
+
+            <div class="text-center mb-5">
+                <h1 class="display-4 fw-bold text-dark" style="font-family: 'Frank Ruhl Libre', serif;">{{ article.title|safe }}</h1>
+                
+                <p class="text-muted fs-5 mt-3">
+                    <i class="bi bi-calendar3"></i> {{ article.hebrew_date }}
+                    {% if article.parasha and article.parasha != 'general' and article.parasha != ',general,' %}
+                        <span class="ms-3 hide-in-zen">
+                            <i class="bi bi-book"></i> 
+                            <script>document.write("{{ article.parasha|escapejs }}".replace(/general/gi, '').replace(/^,+|,+$/g, '').replace(/,+/g, ', '));</script>
+                        </span>
+                    {% endif %}
+                </p>
+                <hr class="w-25 mx-auto opacity-75" style="border-color: #d4af37; border-width: 2px;">
+            </div>
+
+            <!-- תוכן המאמר -->
+            <div class="article-content book-reading-mode">
+                {{ article.content|safe }}
+            </div>
+            
+        </div>
+    </div>
+</div>
+
+<script>
+    // פונקציית העתקת מקור
+    function copyCitation() {
+        const title = "{{ article.title|striptags|escapejs }}";
+        const url = window.location.href;
+        const citationText = `"${title}"\nמתוך אתר ספריית לייבוביץ.\nקישור למקור: ${url}`;
+        navigator.clipboard.writeText(citationText).then(function() {
+            alert("המקור הועתק ללוח בהצלחה!");
+        }).catch(function(err) {
+            console.error('שגיאה בהעתקת המקור: ', err);
+        });
+    }
+
+    // פונקציית מצב זן
+    function toggleZenMode() {
+        document.body.classList.toggle('zen-mode');
+        
+        const icon = document.getElementById('zenIcon');
+        const btn = document.getElementById('zenToggleBtn');
+        
+        if (document.body.classList.contains('zen-mode')) {
+            icon.classList.remove('bi-arrows-fullscreen');
+            icon.classList.add('bi-fullscreen-exit');
+            btn.title = "יציאה ממצב קריאה";
+            window.scrollTo({ top: 0, behavior: 'smooth' }); // מחזיר להתחלה לקריאה רציפה
+        } else {
+            icon.classList.remove('bi-fullscreen-exit');
+            icon.classList.add('bi-arrows-fullscreen');
+            btn.title = "מצב קריאה נקי";
+        }
+    }
+</script>
+
+<style>
+    .book-reading-mode { font-family: 'Frank Ruhl Libre', serif; font-size: 1.3rem; line-height: 2; color: #2c3e50; }
+    .book-reading-mode h2, .book-reading-mode h3 { color: #d4af37; font-weight: bold; margin-top: 1.5rem; }
+    .content-card-bg { background-color: #ffffff; transition: all 0.4s ease; }
+    body.dark-mode .content-card-bg { background-color: #1e293b; border: 1px solid rgba(255,255,255,0.05) !important; }
+    body.dark-mode .text-dark { color: #f8fafc !important; }
+    body.dark-mode .article-content { color: #cbd5e1 !important; }
+
+    /* ============================================== */
+    /* מערכת מצב קריאה נקי (Zen Mode)                 */
+    /* ============================================== */
+    
+    .zen-toggle-btn {
+        position: fixed;
+        bottom: 110px; /* הועלה למעלה כדי לא להסתיר את כפתור החזרה לראש העמוד */
+        left: 35px;    /* יושב בדיוק מעל כפתור החזרה למעלה */
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #a67c52 0%, #d4af37 100%);
+        color: white;
+        border: none;
+        box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
+        font-size: 1.5rem;
+        z-index: 10500;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+    
+    html[dir="ltr"] .zen-toggle-btn { left: auto; right: 35px; }
+    
+    .zen-toggle-btn:hover {
+        transform: scale(1.1);
+        box-shadow: 0 6px 20px rgba(212, 175, 55, 0.6);
+    }
+    
+    /* הסתרת רעשי רקע */
+    body.zen-mode .top-navbar,
+    body.zen-mode .site-footer,
+    body.zen-mode .hero-section,
+    body.zen-mode .acc-toggle-btn,
+    body.zen-mode .global-ai-side-btn,
+    body.zen-mode .qa-floating-pill,
+    body.zen-mode .breadcrumb,
+    body.zen-mode #reading-progress-container,
+    body.zen-mode .hide-in-zen {
+        display: none !important;
+    }
+    
+    /* הפיכת הדף לנקי ורחב במידה האידיאלית לקריאה */
+    body.zen-mode { background-color: #fdfbf7 !important; }
+    body.dark-mode.zen-mode { background-color: #0f172a !important; }
+    
+    /* מחיקת המסגרת והצל מהכרטיסייה במצב זן, ליצירת תחושה של "דף פתוח" */
+    body.zen-mode .content-card-bg {
+        box-shadow: none !important;
+        background-color: transparent !important;
+        border: none !important;
+    }
+    
+    /* מירכוז הטקסט והתאמת הרוחב */
+    body.zen-mode #main-content-col {
+        max-width: 850px !important;
+        margin: 0 auto !important;
+        flex: 0 0 100% !important;
+        padding-top: 5vh !important;
+        padding-bottom: 15vh !important;
+    }
+    
+    body.zen-mode .zen-toggle-btn {
+        background: #3f4050;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+</style>
+{% endblock %}

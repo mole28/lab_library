@@ -1,0 +1,57 @@
+{% extends 'articles/base.html' %}
+
+{% block title %}תודה על הזמנתך! - הספרייה התורנית{% endblock %}
+
+{% block content %}
+<div class="container mt-5 mb-5 d-flex justify-content-center">
+    <div class="card p-5 border-0 shadow-lg text-center" style="max-width: 600px; width: 100%; border-radius: 20px; border-top: 8px solid #28a745 !important;">
+        
+        <div class="mb-4">
+            <div class="d-inline-flex align-items-center justify-content-center bg-success text-white rounded-circle shadow" style="width: 80px; height: 80px;">
+                <i class="bi bi-check-lg" style="font-size: 3rem;"></i>
+            </div>
+        </div>
+
+        <h1 class="fw-bold mb-3" style="color: #2c3e50;">תודה רבה, {{ order.first_name }}!</h1>
+        <p class="text-muted fs-5 mb-4">הזמנתך <strong class="text-dark">#{{ order.id }}</strong> התקבלה במערכת וממתינה לאישור תשלום.</p>
+
+        <!-- קופסת הוראות התשלום -->
+        <div class="bg-light p-4 rounded-3 mb-4 text-end" style="border: 1px solid #fbe6a2; background-color: #fffdf5 !important;">
+            <h4 class="fw-bold mb-3" style="color: #b58500;"><i class="bi bi-wallet2 me-2"></i>הוראות תשלום</h4>
+            <p class="mb-3 border-bottom pb-2">כדי שהספרים ייצאו אליך בהקדם, אנא העבר סך של <strong>₪{{ order.total_paid }}</strong> באחת מהדרכים הבאות:</p>
+            
+            <div class="mb-3">
+                <strong class="d-block mb-1 text-dark">1. תשלום באפליקציית Bit או PayBox:</strong>
+                <span class="text-muted">העבר למספר הטלפון:</span> <span class="fw-bold fs-5 text-dark" dir="ltr">055-553-9221</span>
+            </div>
+            
+            <div>
+                <strong class="d-block mb-1 text-dark">2. העברה בנקאית:</strong>
+                <ul class="list-unstyled text-muted mb-0">
+                    <li>בנק: <strong class="text-dark">דיסקונט</strong></li>
+                    <li>סניף: <strong class="text-dark">159</strong></li>
+                    <li>מספר חשבון: <strong class="text-dark">128205190</strong></li>
+                    <li>שם בעל החשבון: <strong class="text-dark">משה לייבוביץ</strong></li>
+                </ul>
+            </div>
+            
+            <div class="alert alert-warning mt-3 mb-0 p-2 text-center" style="font-size: 0.9rem;">
+                <strong class="text-danger">חשוב:</strong> אנא ציין את מספר ההזמנה <strong>#{{ order.id }}</strong> בהערות התשלום.
+            </div>
+        </div>
+
+        <!-- כפתורי עדכון (וואטסאפ / מייל) -->
+        <div class="d-grid gap-3 mb-4">
+            <a href="https://wa.me/972555539221?text=היי%20משה,%20ביצעתי%20עכשיו%20הזמנה%20מספר%20%23{{ order.id }}%20באתר%20הספרייה.%20העברתי%20את%20התשלום!" target="_blank" class="btn btn-success btn-lg rounded-pill fw-bold" style="background-color: #25D366; border-color: #25D366; box-shadow: 0 4px 15px rgba(37,211,102,0.4);">
+                <i class="bi bi-whatsapp me-2"></i> שילמתי! עדכן אותי בוואטסאפ
+            </a>
+            
+            <a href="mailto:moshe111moshe111@gmail.com?subject=עדכון%20תשלום%20עבור%20הזמנה%20%23{{ order.id }}&body=היי%20משה,%0D%0Aביצעתי%20עכשיו%20הזמנה%20מספר%20%23{{ order.id }}%20באתר%20הספרייה.%20העברתי%20את%20התשלום!" class="btn btn-primary btn-lg rounded-pill fw-bold" style="background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%); border: none; box-shadow: 0 4px 15px rgba(37, 117, 252, 0.4);">
+                <i class="bi bi-envelope me-2"></i> שילמתי! עדכן אותי במייל
+            </a>
+        </div>
+
+        <a href="{% url 'articles:list' %}" class="btn btn-outline-secondary rounded-pill px-4">חזרה לעמוד הבית</a>
+    </div>
+</div>
+{% endblock %}

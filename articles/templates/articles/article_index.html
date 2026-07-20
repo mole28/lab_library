@@ -1,0 +1,79 @@
+{% extends 'articles/base.html' %}
+
+{% block title %}אינדקס מאמרים | ספריית לייבוביץ{% endblock %}
+
+{% block hero %}
+<div class="hero-section" style="height: 280px;">
+    <div class="hero-overlay"></div>
+    <div class="hero-content text-center w-100">
+        <h1 class="text-white mb-0 fw-bold display-4" style="text-shadow: 2px 2px 8px rgba(0,0,0,0.8);">אינדקס מאמרים</h1>
+        <p class="text-white mt-2 fs-4" style="text-shadow: 1px 1px 5px rgba(0,0,0,0.8);">כל מאמרי האתר מסודרים לפי א"ב</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb" class="mb-4 mt-3">
+    <ol class="breadcrumb" style="font-size: 1rem;">
+        <li class="breadcrumb-item">
+            <a href="{% url 'articles:list' %}" class="text-decoration-none text-muted"><i class="bi bi-house-door-fill"></i> ספריית לייבוביץ</a>
+        </li>
+        <li class="breadcrumb-item active fw-bold" aria-current="page">מאמרים</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container mb-5 pb-5">
+    <div class="card p-4 p-md-5 shadow-sm" style="background-color: #fdfdf9; border: 1px solid #eaeaea; border-radius: 16px;">
+        <div class="row">
+            
+            {% for letter, articles in grouped_articles.items %}
+            <div class="col-md-4 mb-5 d-flex flex-column align-items-center">
+                
+                <div class="w-100" style="max-width: 250px;">
+                    <!-- האות המרכזית -->
+                    <h2 class="text-center fw-bold mb-4" style="color: #2c3e50; font-size: 2.2rem;">{{ letter }}</h2>
+                    
+                    <!-- רשימת המאמרים ששייכים לאות הזו -->
+                    <ul style="list-style-type: disc; padding-right: 25px; margin: 0;">
+                        {% for article in articles %}
+                        <li class="mb-3" style="color: #2c3e50;">
+                            <a href="{% url 'articles:detail' article.pk %}" class="text-decoration-none article-link" style="color: #4e8cff; font-size: 1.15rem; transition: all 0.2s;">
+                                {{ article.title }}
+                            </a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+            </div>
+            
+            {% empty %}
+            <!-- הודעה למקרה שהמסד נתונים ריק ממאמרים -->
+            <div class="col-12 text-center py-5">
+                <h4 class="text-muted">אין מאמרים להצגה כרגע. ברגע שתוסיף מאמרים למערכת, הם יופיעו כאן אוטומטית לפי סדר א"ב.</h4>
+            </div>
+            {% endfor %}
+            
+        </div>
+    </div>
+</div>
+
+<style>
+    /* אפקט ריחוף (Hover) לקישורים - משנה צבע ומוסיף קו תחתון */
+    .article-link:hover {
+        color: #2575fc !important;
+        text-decoration: underline !important;
+    }
+    
+    /* עיצוב הנקודות (Bullets) של הרשימה שיתאימו לעיצוב הכהה */
+    ul {
+        color: #2c3e50;
+    }
+    ul li::marker {
+        color: #2c3e50;
+        font-size: 1.2rem;
+    }
+</style>
+{% endblock %}

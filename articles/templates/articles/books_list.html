@@ -1,0 +1,183 @@
+{% extends 'articles/base.html' %}
+
+{% block title %}ספרים | הספרייה{% endblock %}
+
+{% block hero %}
+<div class="hero-section" style="height: 280px;">
+    <div class="hero-overlay"></div>
+    <div class="hero-content text-center w-100">
+        <h1 class="text-white mb-0 fw-bold display-4" style="text-shadow: 2px 2px 8px rgba(0,0,0,0.8);">הספרים שלנו</h1>
+        <p class="text-white mt-2 fs-4" style="text-shadow: 1px 1px 5px rgba(0,0,0,0.8);">עיון בכל ספרי האתר</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb" class="mb-4 mt-3">
+  <ol class="breadcrumb" style="font-size: 1rem;">
+    <li class="breadcrumb-item">
+        <a href="{% url 'articles:list' %}"><i class="bi bi-house-door-fill"></i> ספריית לייבוביץ</a>
+    </li>
+    <li class="breadcrumb-item active fw-bold" aria-current="page">ספרים</li>
+  </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="row mt-4 mb-5">
+    
+    <!-- אזור הספרים המרכזי -->
+    <div class="col-lg-9 order-lg-2">
+        
+        <!-- סקשן 1: ספרים לקריאה חופשית -->
+        <div class="mb-5">
+            <h3 class="fw-bold border-bottom pb-2 mb-4" style="color: #2c3e50;">ספרים לקריאה חופשית</h3>
+            <div class="row g-4">
+                {% for book in books %}
+                    {% if not book.is_for_sale %}
+                    <div class="col-md-4">
+                        <div class="card h-100 p-4 border shadow-sm d-flex flex-column justify-content-between book-card-hover content-card-bg text-center" style="border-radius: 12px;">
+                            <div>
+                                <i class="bi bi-journal-text mb-3 d-block" style="font-size: 3rem; color: #3f4050;"></i>
+                                <h4 class="fw-bold mb-3" style="line-height: 1.4; color: #2c3e50;">{{ book.title|safe }}</h4>
+                                <p class="text-muted small">מאת: {{ book.author }}</p>
+                            </div>
+                            <div class="mt-3">
+                                <a href="{% url 'articles:book_detail' book.pk %}" class="btn btn-outline-dark w-100 rounded-pill">היכנס לספר</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- סקשן 2: חנות הספרים למכירה -->
+        <div class="mt-5 mb-5 pt-3">
+            <h3 class="fw-bold border-bottom pb-2 mb-4" style="color: #b58500;">חנות הספרים (לרכישה)</h3>
+            <div class="row g-4">
+                {% for book in books %}
+                    {% if book.is_for_sale %}
+                    <div class="col-md-4">
+                        <div class="card h-100 shadow-sm store-card-hover content-card-bg text-center pb-4" style="border: 1px solid #eaeaea; border-radius: 4px; overflow: hidden;">
+                            
+                            <!-- תמונת כריכה מוצגת למעלה -->
+                            <div style="background-color: #f8f9fa; padding: 15px; display: flex; align-items: center; justify-content: center; height: 260px; border-bottom: 1px solid #f0f0f0;">
+                                {% if book.cover_image %}
+                                    <a href="{% url 'articles:book_detail' book.pk %}" class="d-block w-100 h-100 d-flex justify-content-center align-items-center">
+                                        <!-- פקודת loading="lazy" נוספה כאן -->
+                                        <img src="{{ book.cover_image.url }}" alt="{{ book.title }}" loading="lazy" style="max-height: 100%; max-width: 100%; object-fit: contain; box-shadow: 0 4px 10px rgba(0,0,0,0.15);">
+                                    </a>
+                                {% else %}
+                                    <div class="text-muted opacity-50">
+                                        <i class="bi bi-image" style="font-size: 4rem;"></i><br>אין תמונת כריכה
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- פרטי הספר -->
+                            <div class="card-body px-3 pt-4 pb-0 d-flex flex-column align-items-center">
+                                <h5 class="fw-bold m-0" style="color: #002347; font-size: 1.3rem;">{{ book.title|safe }}</h5>
+                                
+                                <!-- פס הפרדה קטן מוזהב -->
+                                <div style="width: 40px; height: 2px; background-color: #a88132; margin: 15px 0;"></div>
+                                
+                                <!-- המחיר -->
+                                <h4 class="fw-bold mb-4" style="color: #a88132;">{{ book.price }} ש"ח</h4>
+                                
+                                <!-- כפתורי פעולה -->
+                                <div class="w-100 px-2 mt-auto d-flex flex-column gap-2">
+                                    {% if book.stock > 0 %}
+                                        <a href="{% url 'articles:add_to_cart' book.id %}" class="btn rounded-0 fw-bold w-100 btn-store-buy">
+                                            הוסף לעגלה
+                                        </a>
+                                    {% else %}
+                                        <button class="btn btn-secondary rounded-0 fw-bold w-100" disabled>אזל מהמלאי</button>
+                                    {% endif %}
+                                    <a href="{% url 'articles:book_detail' book.pk %}" class="text-muted small text-decoration-none mt-2">לפרטים נוספים</a>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+
+    </div>
+
+    <!-- סרגל צד מעוצב -->
+    <div class="col-lg-3 order-lg-1">
+        <div class="card p-4 shadow-sm border-0 mb-4 content-card-bg" style="border-radius: 12px;">
+            <form action="#" method="get" class="d-flex mb-4">
+                <input type="text" class="form-control me-2 rounded-pill bg-light border-0 px-3" placeholder="חיפוש בספרים...">
+                <button type="submit" class="btn btn-dark rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; min-width: 40px;"><i class="bi bi-search"></i></button>
+            </form>
+            
+            <!-- רשימה 1: ספרים לקריאה -->
+            <h5 class="fw-bold border-bottom pb-2 mb-3" style="color: #2c3e50;">ספרים לקריאה</h5>
+            <ul class="list-unstyled mb-4">
+                {% for book in books %}
+                    {% if not book.is_for_sale %}
+                    <li class="mb-2">
+                        <a href="{% url 'articles:book_detail' book.pk %}" class="sidebar-book-link text-decoration-none d-flex align-items-start justify-content-between">
+                            <div class="d-flex align-items-start">
+                                <i class="bi bi-book sidebar-book-icon fs-5 me-3 mt-1"></i>
+                                <span class="fw-medium text-dark" style="line-height: 1.4; font-size: 0.95rem;">{{ book.title|safe }}</span>
+                            </div>
+                        </a>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+
+            <!-- רשימה 2: חנות הספרים -->
+            <h5 class="fw-bold border-bottom pb-2 mb-3 mt-2" style="color: #b58500;">חנות הספרים</h5>
+            <ul class="list-unstyled mb-0">
+                {% for book in books %}
+                    {% if book.is_for_sale %}
+                    <li class="mb-2">
+                        <a href="{% url 'articles:book_detail' book.pk %}" class="sidebar-book-link text-decoration-none d-flex align-items-start justify-content-between">
+                            <div class="d-flex align-items-start">
+                                <i class="bi bi-cart3 sidebar-book-icon fs-5 me-3 mt-1" style="color: #b58500;"></i>
+                                <span class="fw-medium text-dark" style="line-height: 1.4; font-size: 0.95rem;">{{ book.title|safe }}</span>
+                            </div>
+                            <span class="badge text-dark ms-2 mt-1 shadow-sm" style="font-size: 0.7rem; background-color: #ffe066; border: 1px solid #d4af37;">₪{{ book.price }}</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+
+        </div>
+    </div>
+</div>
+
+<style>
+    /* אנימציות לקריאה חופשית */
+    .book-card-hover { transition: all 0.3s ease; }
+    .book-card-hover:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.08) !important; }
+    
+    /* עיצוב ואנימציה לחנות הספרים */
+    .store-card-hover { transition: all 0.3s ease; }
+    .store-card-hover:hover { transform: scale(1.02); box-shadow: 0 10px 25px rgba(0,0,0,0.12) !important; }
+    
+    /* כפתור קנייה ייחודי */
+    .btn-store-buy { background-color: transparent; color: #a88132; border: 1px solid #a88132; transition: all 0.3s ease; }
+    .btn-store-buy:hover { background-color: #a88132; color: #ffffff; }
+
+    /* סרגל צד */
+    .sidebar-book-link { border-radius: 8px; padding: 10px 10px 10px 15px; transition: all 0.25s ease; background-color: transparent; border-right: 3px solid transparent; }
+    .sidebar-book-link:hover { background-color: #f8f9fa; color: #2c3e50 !important; border-right-color: #2c3e50; transform: translateX(-4px); }
+    .sidebar-book-icon { color: #adb5bd; transition: color 0.25s ease; }
+    .sidebar-book-link:hover .sidebar-book-icon { color: #2c3e50; }
+    
+    /* תמיכה במצב לילה */
+    body.dark-mode .sidebar-book-link:hover { background-color: #0f172a; border-right-color: #d4af37; }
+    body.dark-mode .sidebar-book-link .text-dark { color: #e2e8f0 !important; }
+    body.dark-mode .book-card-hover .text-dark, body.dark-mode .store-card-hover h5 { color: #f8fafc !important; }
+    body.dark-mode .store-card-hover .btn-store-buy { color: #d4af37; border-color: #d4af37; }
+    body.dark-mode .store-card-hover .btn-store-buy:hover { background-color: #d4af37; color: #0f172a; }
+</style>
+{% endblock %}

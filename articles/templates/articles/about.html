@@ -1,0 +1,37 @@
+{% extends 'articles/base.html' %}
+
+{% block title %}אודות | ספריית לייבוביץ{% endblock %}
+
+{% block content %}
+<div class="container py-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg p-5 border-0" style="border-radius: 20px; background: linear-gradient(to bottom, #ffffff, #fdfbf7);">
+                <div class="text-center mb-5">
+                    <h1 class="fw-bold display-4" style="color: #2c3e50;">אודות הספרייה</h1>
+                    <div style="width: 80px; height: 4px; background: #d4af37; margin: 20px auto; border-radius: 2px;"></div>
+                </div>
+                
+                <div class="article-content" style="font-size: 1.2rem; color: #4a5568;">
+                    <p class="mb-4">
+                        <strong>ברוכים הבאים לספריית לייבוביץ</strong>, מאגר מקוון ומתקדם המוקדש ללימוד, מחקר והפצה של מאמרים תורניים, סוגיות בהלכה, דברי אגדה וחידושים בפרשת השבוע.
+                    </p>
+                    <p class="mb-4">
+                        מטרת האתר היא להנגיש את אוצרות הרוח של עולם התורה לכל דורש, תוך שימוש בטכנולוגיות המתקדמות ביותר של פיתוח אתרים. האתר נבנה מתוך מחשבה קפדנית על חוויית משתמש (UX) מושלמת, עיצוב נקי ומוקפד, והנגשה טכנולוגית חסרת פשרות.
+                    </p>
+                    <p class="mb-4">
+                        בספרייה תמצאו לא רק חומרי קריאה ומחקר, אלא גם כלי עזר חכמים ללומד – החל ממחשבוני המרת מידות חז"ל בדיוק הלכתי, ועד למערכת חכמה המבוססת על בינה מלאכותית (AI) שיודעת לסרוק את התכנים ולענות על שאלות מתוך הטקסטים המצויים במאגר.
+                    </p>
+
+                    <!-- החתימה המעודכנת (ברורה יותר) -->
+                    <div class="text-center mt-5" style="opacity: 0.6; transform: skewX(-10deg);">
+                        <p style="font-family: 'Courier New', Courier, monospace; letter-spacing: 2px; font-size: 0.85rem; color: #333; font-weight: 600;">
+                            The website was developed and built by ML
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

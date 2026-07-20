@@ -1,0 +1,32 @@
+{% extends 'articles/base.html' %}
+
+{% block title %}מאמר חדש | הספרייה{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <h1 class="mb-4 fw-bold text-dark">
+                {% if form.instance.pk %}
+                    עריכת מאמר: {{ form.instance.title }}
+                    {% else %}
+                         כתיבת מאמר חדש
+                    {% endif %}
+            </h1>
+            
+            <form method="post" class="card p-4 shadow-sm mb-5">
+                {% csrf_token %}
+                
+                <div class="mb-3">
+                    {{ form.as_p }}
+                </div>
+                
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-dark">שמור ופרסם מאמר</button>
+                    <a href="{% url 'articles:list' %}" class="btn btn-outline-secondary ms-2">ביטול</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

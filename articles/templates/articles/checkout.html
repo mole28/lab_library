@@ -1,0 +1,83 @@
+{% extends 'articles/base.html' %}
+
+{% block title %}קופה - פרטי משלוח | הספרייה{% endblock %}
+
+{% block content %}
+<div class="container mt-5 mb-5" style="max-width: 800px;">
+    <h1 class="fw-bold mb-4 border-bottom pb-3" style="color: #2c3e50;">קופה - פרטי משלוח</h1>
+
+    <div class="row">
+        <!-- סיכום הזמנה בצד שמאל -->
+        <div class="col-md-5 order-md-2 mb-4">
+            <div class="card shadow-sm p-4 border-0 content-card-bg" style="background-color: #f8f9fa;">
+                <h4 class="fw-bold mb-3">סיכום הזמנה</h4>
+                <ul class="list-group list-group-flush mb-3">
+                    {% for item in items %}
+                    <li class="list-group-item d-flex justify-content-between lh-sm" style="background: transparent;">
+                        <div>
+                            <h6 class="my-0 fw-bold">{{ item.book.title }}</h6>
+                            <small class="text-muted">כמות: {{ item.quantity }}</small>
+                        </div>
+                        <span class="text-muted">₪{{ item.get_total_price }}</span>
+                    </li>
+                    {% endfor %}
+                    <li class="list-group-item d-flex justify-content-between bg-light mt-2" style="border-top: 2px solid #d4af37;">
+                        <strong class="fs-5">סך הכל (ש"ח)</strong>
+                        <strong class="fs-5" style="color: #d4af37;">₪{{ total_price }}</strong>
+                    </li>
+                </ul>
+                <div class="alert alert-info small mt-3 border-0">
+                    <i class="bi bi-info-circle-fill"></i> התשלום מתבצע באמצעות העברה בנקאית או אפליקציית ביט. הוראות התשלום יופיעו מיד לאחר אישור ההזמנה.
+                </div>
+            </div>
+        </div>
+
+        <!-- טופס פרטים בצד ימין -->
+        <div class="col-md-7 order-md-1">
+            <div class="card shadow-sm p-4 border-0 content-card-bg">
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-sm-6">
+                            <label class="form-label fw-bold">שם פרטי</label>
+                            <input type="text" class="form-control" name="first_name" required>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label fw-bold">שם משפחה</label>
+                            <input type="text" class="form-control" name="last_name" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold">אימייל</label>
+                            <input type="email" class="form-control" name="email" required placeholder="you@example.com">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold">טלפון (לתיאום משלוח)</label>
+                            <input type="text" class="form-control" name="phone" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold">כתובת מלאה</label>
+                            <input type="text" class="form-control" name="address" required placeholder="רחוב ומספר בית/דירה">
+                        </div>
+                        <div class="col-sm-8">
+                            <label class="form-label fw-bold">עיר</label>
+                            <input type="text" class="form-control" name="city" required>
+                        </div>
+                        <div class="col-sm-4">
+                            <label class="form-label fw-bold">מיקוד <span class="text-muted">(אופציונלי)</span></label>
+                            <input type="text" class="form-control" name="zip_code">
+                        </div>
+                        <div class="col-12 mt-4">
+                            <label class="form-label fw-bold">הערות להזמנה <span class="text-muted">(אופציונלי)</span></label>
+                            <textarea class="form-control" name="notes" rows="3" placeholder="הוראות מיוחדות לשליח..."></textarea>
+                        </div>
+                    </div>
+                    <hr class="my-4">
+                    <button class="btn btn-primary w-100 btn-lg fw-bold" type="submit" style="background: linear-gradient(135deg, #d4af37 0%, #b5952f 100%); color: #1e202c; border: none;">
+                        <i class="bi bi-check2-circle"></i> אשר הזמנה ומעבר לתשלום
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
