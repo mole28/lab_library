@@ -8,3 +8,4 @@ google-genai
 django-ckeditor
 django-sslserver
 pyluach
+Pillow
