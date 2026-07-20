@@ -4,7 +4,7 @@ whitenoise
 psycopg2-binary
 dj-database-url
 python-dotenv
-google-generativeai
+google-genai
 django-ckeditor
 django-sslserver
 pyluach
