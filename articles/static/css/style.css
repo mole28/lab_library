@@ -25,31 +25,55 @@ body { display: flex; flex-direction: column; font-family: 'Assistant', sans-ser
 /* ========================================== */
 /* תפריט עליון */
 /* ========================================== */
-.top-navbar { background-color: #3f4050; height: 115px; display: flex; align-items: center; box-shadow: 0 2px 15px rgba(0,0,0,0.2); z-index: 1040; width: 100%; position: relative; transition: background-color 0.4s ease; }
+.top-navbar {
+    background-color: #3f4050; min-height: 70px; display: flex; align-items: center; box-shadow: 0 2px 15px rgba(0,0,0,0.2); z-index: 1040; width: 100%; position: relative; transition: background-color 0.4s ease, min-height 0.3s ease;
+}
 .nav-aligned-container { max-width: 1300px; width: 100%; margin: 0 auto; padding: 0 1.5rem; display: flex; justify-content: space-between; align-items: center; }
-.nav-separator { width: 2px; height: 45px; background: linear-gradient(180deg, rgba(212,175,55,0) 0%, rgba(212,175,55,0.85) 50%, rgba(212,175,55,0) 100%); border-radius: 2px; box-shadow: 0 0 8px rgba(212,175,55,0.3); display: block; }
+.nav-separator { width: 2px; height: 30px; background: linear-gradient(180deg, rgba(212,175,55,0) 0%, rgba(212,175,55,0.85) 50%, rgba(212,175,55,0) 100%); border-radius: 2px; box-shadow: 0 0 8px rgba(212,175,55,0.3); display: block; }
 .nav-logo { color: #ffffff; font-size: 1.6rem; font-weight: bold; text-decoration: none; white-space: nowrap; }
 .nav-logo:hover { color: #fdfbf7; }
 .nav-link-custom { color: #ffffff; text-decoration: none; font-size: 1.25rem; font-weight: 600; display: flex; align-items: center; gap: 8px; white-space: nowrap; transition: color 0.2s; }
 .nav-link-custom:hover { color: #d4af37; }
-.nav-link-custom i { font-size: 1.45rem; }
+.nav-link-custom i { font-size: 1.45rem; transition: transform 0.2s; }
+
 .nav-left-absolute { position: absolute; left: 30px; display: flex; align-items: center; gap: 15px; white-space: nowrap; }
 html[dir="ltr"] .nav-left-absolute { left: auto; right: 30px; }
+
 .rights-text { color: #dc3545; font-size: 0.85rem; line-height: 1.2; text-align: left; }
 .lang-btn-custom { background: transparent; border: none; padding: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.2s; }
 .lang-btn-custom:hover { transform: scale(1.05); }
 .lang-flag-custom { width: 28px; height: auto; border-radius: 2px; box-shadow: 0 1px 3px rgba(0,0,0,0.3); margin-bottom: 3px; }
 .lang-text-custom { color: #ffffff; font-size: 0.85rem; font-weight: 700; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); line-height: 1; }
 
-.dark-mode-toggle-btn { background: transparent; border: 1px solid rgba(212, 175, 55, 0.6); color: #d4af37; width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; cursor: pointer; transition: all 0.3s ease; margin-left: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
-.dark-mode-toggle-btn:hover { background: rgba(212, 175, 55, 0.15); transform: scale(1.1); box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3); }
+.dark-mode-toggle-btn, .cart-icon-btn { background: transparent; border: 1px solid rgba(212, 175, 55, 0.6); color: #d4af37; width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.2); text-decoration: none; }
+.dark-mode-toggle-btn:hover, .cart-icon-btn:hover { background: rgba(212, 175, 55, 0.15); transform: scale(1.1); box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3); color: #d4af37; }
 html[dir="ltr"] .dark-mode-toggle-btn { margin-left: 0; margin-right: 15px; }
 
+.custom-hamburger { display: none; background: transparent; border: 1px solid #d4af37; color: #d4af37; font-size: 2rem; border-radius: 6px; padding: 2px 12px; cursor: pointer; transition: all 0.3s ease; }
+.custom-hamburger:hover { background: rgba(212, 175, 55, 0.1); box-shadow: 0 0 10px rgba(212, 175, 55, 0.3); }
+
+.nav-link-custom.active { color: #d4af37; text-shadow: 0 0 10px rgba(212, 175, 55, 0.5); border-bottom: 2px solid #d4af37; padding-bottom: 3px; }
+.nav-link-custom.active i { color: #d4af37; text-shadow: 0 0 12px rgba(212, 175, 55, 0.8); }
+
+@media (min-width: 1381px) {
+    .mobile-nav-header, #navbarCollapseContent { display: contents !important; }
+    .collapse:not(.show) { display: contents !important; } 
+}
+
 @media (max-width: 1380px) {
-    .top-navbar { height: auto; padding: 20px 0; }
-    .nav-aligned-container { flex-wrap: wrap; gap: 15px; justify-content: center; padding: 0 20px; }
-    .nav-separator { display: none; } 
-    .nav-left-absolute { position: static; justify-content: center; margin-top: 15px; margin-bottom: 5px; }
+    .top-navbar { height: auto !important; padding: 15px 0 !important; align-items: flex-start !important; }
+    .nav-aligned-container { flex-direction: column !important; align-items: stretch !important; padding: 0 20px !important; width: 100% !important; }
+    .mobile-nav-header { display: flex !important; justify-content: space-between !important; align-items: center !important; width: 100% !important; }
+    .custom-hamburger { display: block !important; }
+    .custom-hamburger:focus { outline: none !important; box-shadow: 0 0 10px rgba(212, 175, 55, 0.4) !important; }
+    
+    #navbarCollapseContent:not(.show):not(.collapsing) { display: none !important; }
+    #navbarCollapseContent.show { display: flex !important; flex-direction: column !important; align-items: center !important; width: 100% !important; margin-top: 20px !important; gap: 15px !important; padding-bottom: 10px !important; }
+    
+    .nav-separator { display: none !important; } 
+    
+    .nav-left-absolute { position: relative !important; left: auto !important; right: auto !important; top: auto !important; bottom: auto !important; display: flex !important; justify-content: center !important; flex-wrap: wrap !important; width: 100% !important; margin-top: 15px !important; gap: 20px !important; padding-top: 20px !important; border-top: 1px solid rgba(212,175,55,0.2) !important; }
+    .nav-link-custom { padding: 12px !important; width: 100% !important; justify-content: center !important; border-bottom: 1px solid rgba(255,255,255,0.05) !important; }
 }
 
 /* ========================================== */
@@ -173,44 +197,35 @@ html[dir="ltr"] .scroll-top-btn { left: auto; right: 40px; }
 /* התאמות למובייל - Responsive Design       */
 /* ========================================== */
 @media (max-width: 768px) {
-    /* כיווץ תמונת הרקע */
     .hero-section { height: 260px !important; }
     .hero-content { transform: translateY(-10px); padding: 0 10px; }
     
-    /* עיצוב חיפוש מותאם */
     .elegant-search-form { padding: 5px 15px; }
     .elegant-search-input { font-size: 1rem; padding: 8px 10px; }
     
-    /* טיפוגרפיה ושוליים */
     .article-content { font-size: 1.1rem; line-height: 1.6; }
     .article-text { font-size: 1rem; }
     .container-main { padding-left: 10px !important; padding-right: 10px !important; }
     
-    /* כפתור AI צידי (התמצאות) - אייקון בלבד ובמיקום שלא מפריע */
     .global-ai-side-btn { width: 50px; height: 50px; top: auto; bottom: 100px; border-radius: 8px 0 0 8px; }
     .ai-side-icon { width: 50px; height: 50px; }
     .ai-side-icon svg { width: 22px; height: 22px; }
-    .global-ai-side-btn:hover { width: 50px; } /* ביטול הרחבה במעבר עכבר בנייד */
+    .global-ai-side-btn:hover { width: 50px; } 
     .ai-side-text { display: none !important; }
     
-    /* כפתור QA צף - הפיכה לאייקון קטן ודחיקה לפינה */
     .qa-floating-pill { left: 15px; top: auto; bottom: 170px; padding: 5px; border-radius: 50%; width: 50px; height: 50px; justify-content: center; }
     .qa-pill-text { display: none !important; }
     .qa-pill-icon { width: 40px; height: 40px; margin: 0; box-shadow: none; }
     
-    /* כפתור נגישות */
     .acc-toggle-btn { width: 50px; height: 50px; top: 12%; }
     .acc-toggle-btn i { font-size: 1.5rem !important; }
     .acc-menu-container { width: 90%; max-width: 320px; }
     
-    /* כפתור גלילה למעלה */
     .scroll-top-btn { bottom: 25px; left: 15px; width: 45px; height: 45px; font-size: 1.2rem; }
     html[dir="ltr"] .scroll-top-btn { right: 15px; }
     
-    /* פוטר - סידור לעמודה עדינה */
     .footer-links { gap: 15px; flex-direction: column; text-align: center; }
     
-    /* חלוניות AI (מודל) - התאמת צ'אט */
     .modal-dialog { margin: 10px; width: auto; }
     .nav-chat-box { height: 60vh; padding: 12px; }
     .nav-chat-bubble { max-width: 95%; font-size: 1rem; padding: 10px 15px; }
