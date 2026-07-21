@@ -6,3 +6,5 @@ media/
 staticfiles/
 venv/
 env/
+test_api.py
+datadump.json

@@ -96,7 +96,7 @@
             .collapse:not(.show) { display: contents !important; } 
         }
 
-        /* שבירת תפריט למובייל */
+        /* שבירת תפריט לטאבלט */
         @media (max-width: 1380px) {
             .top-navbar { padding: 15px 0; align-items: flex-start; }
             .nav-aligned-container { flex-direction: column; align-items: stretch; padding: 0 20px; width: 100%; }
@@ -227,11 +227,8 @@
         .ai-side-text { font-size: 1.25rem; font-weight: 700; opacity: 0; transition: opacity 0.3s ease 0.1s; padding: 0 15px 0 10px; }
         .global-ai-side-btn:hover .ai-side-text { opacity: 1; }
 
-        /* הוספנו touch-action כדי שלא יפריע לגלילה כשהוא נייח */
         .qa-floating-pill { position: fixed; top: 55%; left: 30px; z-index: 1048; background: linear-gradient(145deg, #1e202c 0%, #2a2d3e 100%); border: 1px solid rgba(212, 175, 55, 0.5); border-radius: 50px; padding: 6px 6px 6px 22px; display: flex; align-items: center; gap: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); cursor: grab; transition: transform 0.3s ease; text-decoration: none; touch-action: none; user-select: none; }
         .qa-floating-pill:active { cursor: grabbing; transform: scale(1.05); }
-        /* ביטלנו את הובר כדי שלא יפריע בגרירה */
-        /* .qa-floating-pill:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 12px 30px rgba(212, 175, 55, 0.35); border-color: #d4af37; } */
         .qa-pill-icon { background: #d4af37; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 15px rgba(212, 175, 55, 0.6); flex-shrink: 0; pointer-events: none; }
         .qa-pill-icon i { font-size: 1.5rem; color: #1e202c; }
         .qa-pill-text { display: flex; flex-direction: column; text-align: right; pointer-events: none; }
@@ -245,6 +242,53 @@
         html[dir="ltr"] .scroll-top-btn { left: auto; right: 40px; }
         .scroll-top-btn.show { opacity: 1; visibility: visible; transform: translateY(0); }
         .scroll-top-btn:hover { background-color: #d4af37; color: #3f4050; box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4); }
+
+        /* ========================================== */
+        /* התאמות למובייל - Responsive Design       */
+        /* ========================================== */
+        @media (max-width: 768px) {
+            /* כיווץ תמונת הרקע */
+            .hero-section { height: 260px !important; }
+            .hero-content { transform: translateY(-10px); padding: 0 10px; }
+            
+            /* עיצוב חיפוש מותאם */
+            .elegant-search-form { padding: 5px 15px; }
+            .elegant-search-input { font-size: 1rem; padding: 8px 10px; }
+            
+            /* טיפוגרפיה ושוליים */
+            .article-content { font-size: 1.1rem; line-height: 1.6; }
+            .article-text { font-size: 1rem; }
+            .container-main { padding-left: 10px !important; padding-right: 10px !important; }
+            
+            /* כפתור AI צידי (התמצאות) - אייקון בלבד ובמיקום שלא מפריע */
+            .global-ai-side-btn { width: 50px; height: 50px; top: auto; bottom: 100px; border-radius: 8px 0 0 8px; }
+            .ai-side-icon { width: 50px; height: 50px; }
+            .ai-side-icon svg { width: 22px; height: 22px; }
+            .global-ai-side-btn:hover { width: 50px; } /* ביטול הרחבה במעבר עכבר בנייד */
+            .ai-side-text { display: none !important; }
+            
+            /* כפתור QA צף - הפיכה לאייקון קטן ודחיקה לפינה */
+            .qa-floating-pill { left: 15px; top: auto; bottom: 170px; padding: 5px; border-radius: 50%; width: 50px; height: 50px; justify-content: center; }
+            .qa-pill-text { display: none !important; }
+            .qa-pill-icon { width: 40px; height: 40px; margin: 0; box-shadow: none; }
+            
+            /* כפתור נגישות */
+            .acc-toggle-btn { width: 50px; height: 50px; top: 12%; }
+            .acc-toggle-btn i { font-size: 1.5rem !important; }
+            .acc-menu-container { width: 90%; max-width: 320px; }
+            
+            /* כפתור גלילה למעלה */
+            .scroll-top-btn { bottom: 25px; left: 15px; width: 45px; height: 45px; font-size: 1.2rem; }
+            html[dir="ltr"] .scroll-top-btn { right: 15px; }
+            
+            /* פוטר - סידור לעמודה עדינה */
+            .footer-links { gap: 15px; flex-direction: column; text-align: center; }
+            
+            /* חלוניות AI (מודל) - התאמת צ'אט */
+            .modal-dialog { margin: 10px; width: auto; }
+            .nav-chat-box { height: 60vh; padding: 12px; }
+            .nav-chat-bubble { max-width: 95%; font-size: 1rem; padding: 10px 15px; }
+        }
 
         @media print {
             body { background-color: white !important; color: black !important; }
@@ -383,7 +427,8 @@
         </div>
         {% endblock %}
         
-        <main class="pt-4 px-4 container-main">
+        <!-- *** תיקון רספונסיביות: שינוי שוליים במסכים קטנים (px-2 במקום px-4 קבוע) *** -->
+        <main class="pt-4 px-2 px-md-4 container-main">
             {% block breadcrumbs %}{% endblock %}
             {% block content %}
             {% endblock %}
