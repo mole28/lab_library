@@ -31,9 +31,9 @@
     .contact-card {
         background-color: #ffffff;
         border: none;
-        border-top: 4px solid #d4af37; /* פס זהב עליון */
+        border-top: 4px solid #d4af37;
         border-radius: 16px;
-        box-shadow: 0 15px 40px rgba(0,0,0,0.06); /* הצללה רכה ועמוקה */
+        box-shadow: 0 15px 40px rgba(0,0,0,0.06);
         overflow: hidden;
     }
     .form-header {
@@ -53,29 +53,27 @@
         border-radius: 2px;
     }
     
-    /* שדות ההזנה */
     .lux-input {
-        background-color: #f8f9fa; /* רקע אפרפר עדין שמבליט את השדה */
-        border: 1px solid #e2e8f0; /* מסגרת ברורה ונקייה */
+        background-color: #f8f9fa;
+        border: 1px solid #e2e8f0;
         border-radius: 10px;
         padding: 16px 20px;
         font-size: 1.15rem;
         color: #2c3e50;
         transition: all 0.3s ease;
         width: 100%;
-        box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); /* צל פנימי קליל */
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
     }
     .lux-input:focus {
-        background-color: #ffffff; /* הופך ללבן נקי בפוקוס */
+        background-color: #ffffff;
         border-color: #d4af37;
-        box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.15); /* הילה זהובה בפוקוס */
+        box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.15);
         outline: none;
     }
     .lux-input::placeholder {
         color: #94a3b8;
     }
 
-    /* כפתור שליחה יוקרתי (תואם לכפתור ה-AI) */
     .lux-btn {
         background: linear-gradient(145deg, #1e202c 0%, #2a2d3e 100%);
         color: #d4af37;
@@ -97,11 +95,14 @@
         border-color: #d4af37;
         color: #ffffff;
     }
+    .lux-btn:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
 </style>
 
 <div class="container mb-5 pb-5">
     <div class="row">
-        <!-- 100% רוחב כדי להתיישר בול עם הסרגל העליון -->
         <div class="col-12">
             <div class="contact-card p-4 p-md-5">
                 
@@ -132,7 +133,7 @@
                             <input type="text" class="lux-input" name="phone" placeholder="טלפון">
                         </div>
                         <div class="col-md-6">
-                            <input type="text" inputmode="email" class="lux-input" name="email" placeholder='דוא"ל*' required>
+                            <input type="email" class="lux-input" name="email" placeholder='דוא"ל*' required>
                         </div>
                         <div class="col-md-6">
                             <input type="text" class="lux-input" name="subject" placeholder="נושא פנייה*" required>
@@ -141,7 +142,7 @@
                             <textarea class="lux-input" name="message" rows="6" placeholder="תוכן ההודעה..." required></textarea>
                         </div>
                         <div class="col-12 text-center mt-5">
-                            <button type="submit" class="lux-btn">
+                            <button type="submit" class="lux-btn" id="submit-btn">
                                 <i class="bi bi-send"></i> שלח הודעה
                             </button>
                         </div>
@@ -153,15 +154,84 @@
     </div>
 </div>
 
+<script src="https://www.google.com/recaptcha/api.js?render=6LfC_VQtAAAAAGC81qfJWQpnMGlbgaTD91finoP6"></script>
 <script>
-    grecaptcha.ready(function() {
-        document.getElementById('contact-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            grecaptcha.execute('6LfC_VQtAAAAAGC81qfJWQpnMGlbgaTD91finoP6', {action: 'submit'}).then(function(token) {
-                document.getElementById('g-recaptcha-response').value = token;
-                document.getElementById('contact-form').submit();
+    document.addEventListener("DOMContentLoaded", function() {
+        
+        // ==============================================================
+        // שובר שוויון: עוקר את הסמל מהמיכל שחותך אותו, ומעביר אותו ל-body
+        // ==============================================================
+        const breakOutInterval = setInterval(() => {
+            const badge = document.querySelector('.grecaptcha-badge');
+            if (badge) {
+                clearInterval(breakOutInterval); // הסמל נמצא, עוצרים את החיפוש
+                
+                // אם הסמל לא נמצא ב-body הראשי (אלא קבור בתוך div שחותך אותו)
+                if (badge.parentElement !== document.body) {
+                    document.body.appendChild(badge); // שותלים אותו במקום שלא נגזר
+                }
+            }
+        }, 100);
+
+        // ==============================================================
+        // לוגיקת האבטחה (נשארת חזקה ועובדת מאחורי הקלעים)
+        // ==============================================================
+        const form = document.getElementById('contact-form');
+        const submitBtn = document.getElementById('submit-btn');
+
+        if (form && submitBtn) {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault(); 
+                
+                const originalBtnContent = submitBtn.innerHTML;
+                submitBtn.innerHTML = 'מאמת נתוני אבטחה...';
+                submitBtn.disabled = true;
+
+                grecaptcha.ready(function() {
+                    grecaptcha.execute('6LfC_VQtAAAAAGC81qfJWQpnMGlbgaTD91finoP6', {action: 'submit'}).then(function(token) {
+                        document.getElementById('g-recaptcha-response').value = token;
+                        form.submit();
+                    }).catch(function(error) {
+                        console.error('reCAPTCHA Error:', error);
+                        submitBtn.innerHTML = originalBtnContent;
+                        submitBtn.disabled = false;
+                        alert('אירעה שגיאה באימות מול שרתי האבטחה. אנא נסה שוב.');
+                    });
+                });
             });
-        });
+        }
     });
 </script>
+
+<style id="bulletproof-recaptcha">
+    /* ============================================================== */
+    /* העיצוב שכופה את תצוגת הכיווץ/התרחבות בדיוק כמו שביקשת */
+    /* ============================================================== */
+    body > .grecaptcha-badge {
+        display: block !important;
+        visibility: visible !important;
+        position: fixed !important;
+        bottom: 25px !important;
+        
+        /* מצמיד את הסמל לקצה כדי שגוגל לא ידחפו אותו החוצה בטעות */
+        right: 0px !important; 
+        
+        /* 70px יציגו בדיוק את הלוגו של גוגל */
+        width: 70px !important; 
+        overflow: hidden !important;
+        
+        /* אנימציית התרחבות רכה ויפה */
+        transition: width 0.3s ease !important;
+        
+        /* מוודא שהוא תמיד מעל הכל */
+        z-index: 2147483647 !important; 
+        border-radius: 8px 0 0 8px !important;
+        box-shadow: -2px 0px 10px rgba(0,0,0,0.1) !important;
+    }
+
+    /* כשהעכבר עליו, הוא נפתח לרוחב המקורי שלו - 256 פיקסלים */
+    body > .grecaptcha-badge:hover {
+        width: 256px !important; 
+    }
+</style>
 {% endblock %}

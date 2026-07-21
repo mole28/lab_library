@@ -304,12 +304,14 @@
                             </a>
                         </div>
                         
+                        {% if latest_qa %}
                         <div class="p-3 bg-white rounded-3 border mb-4 shadow-sm">
                             <p class="fw-bold mb-2" style="color: #a67c52;"><i class="bi bi-patch-question me-1"></i> שאלה מהמדור:</p>
-                            <p class="mb-0 text-dark" style="font-size: 0.95rem; line-height: 1.5;">האם מברכים שהחיינו בבין המצרים?</p>
+                            <p class="mb-0 text-dark" style="font-size: 0.95rem; line-height: 1.5;">{{ latest_qa.question }}</p>
                         </div>
+                        {% endif %}
                         
-                        <a href="/qa/" class="btn btn-outline-dark w-100 rounded-pill fw-bold">היכנס למדור השו"ת המלא</a>
+                        <a href="{% url 'articles:qa' %}" class="btn btn-outline-dark w-100 rounded-pill fw-bold">היכנס למדור השו"ת המלא</a>
                     </div>
                 </div>
 

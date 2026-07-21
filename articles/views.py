@@ -4,7 +4,9 @@ import urllib.parse
 import re
 import random
 import datetime
-from google import genai
+import concurrent.futures
+import os
+
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render, get_object_or_404, redirect
@@ -17,15 +19,13 @@ from django.core.cache import cache
 from django.views.decorators.cache import cache_page
 from django.db.models import Q, Case, When, Value, IntegerField
 from django.urls import reverse
+from django.db import models
 
 from .forms import ArticleForm
 from .models import Article, Book, Chapter, Section, Cart, CartItem, Order, OrderItem
 from .emails import send_order_confirmation
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
-
-import os
-client = genai.Client(api_key=os.environ.get('GEMINI_API_KEY'))
 
 # ==========================================
 # פונקציות לוח שנה עברי (פרשה, הפטרה, מועדים)
@@ -81,7 +81,7 @@ def get_jewish_calendar_info():
     return cal_data
 
 # ==========================================
-# מנוע חיפוש חכם ומדורג
+# אלגוריתמים לחילוץ וסריקה דינמית מספרי Django Admin (תוקן!)
 # ==========================================
 def generate_word_variations(word):
     variations = set([word])
@@ -124,93 +124,296 @@ def smart_hebrew_search(queryset, query, search_fields):
 
     return results.annotate(relevance=score_expr).order_by('-relevance').distinct()
 
-def get_smart_content(text, max_chars=16000):
+def get_text_fields(model_class):
+    valid_fields = []
+    try:
+        for f in model_class._meta.get_fields():
+            if hasattr(f, 'get_internal_type'):
+                if f.get_internal_type() in ['CharField', 'TextField', 'RichTextField', 'RichTextUploadingField', 'HTMLField']:
+                    valid_fields.append(f.name)
+    except Exception:
+        pass
+    return valid_fields
+
+def get_item_title(item):
+    for field in ['title', 'name', 'header', 'subject', 'question']:
+        if hasattr(item, field):
+            val = getattr(item, field)
+            if val and isinstance(val, str):
+                return val.strip()
+    try: return str(item)
+    except: return f"{item.__class__.__name__} {getattr(item, 'pk', '')}"
+
+def get_item_text(item):
+    text = ""
+    try:
+        for f in item._meta.get_fields():
+            if hasattr(f, 'get_internal_type') and f.get_internal_type() in ['CharField', 'TextField', 'RichTextField', 'RichTextUploadingField', 'HTMLField']:
+                val = getattr(item, f.name, '')
+                if val and isinstance(val, str) and len(val) > 10:
+                    text += val + "\n"
+    except Exception:
+        pass
+    # ניקוי HTML אגרסיבי כדי שהתגיות לא ישברו את מנוע החיפוש במילים סמוכות
+    text = re.sub(r'<[^>]+>', ' ', text)
+    return re.sub(r'\s+', ' ', text).strip()
+
+def ai_document_search(queryset, search_query, search_fields, words, limit=4):
+    if not search_fields or not words: return []
+
+    main_q_or = Q()
+    score_expr = Value(0)
+    
+    for word in words:
+        word_q = Q()
+        for var in generate_word_variations(word):
+            for field in search_fields:
+                word_q |= Q(**{f"{field}__icontains": var})
+        main_q_or |= word_q
+        # התיקון הגאוני: מסד הנתונים מנקד *בעצמו* את ההתאמות לפני שהוא חותך את הרשימה!
+        score_expr += Case(When(word_q, then=Value(1)), default=Value(0), output_field=IntegerField())
+
+    # עכשיו ה-DB יביא תמיד למעלה את הספרים שמכילים הכי הרבה מילים מתאימות, בלי קשר לכמה הם ישנים
+    candidates = list(queryset.filter(main_q_or).distinct().annotate(match_score=score_expr).order_by('-match_score', '-pk')[:40])
+    
+    if not candidates: return []
+        
+    def get_score(item):
+        # דירוג נוסף בפייתון לדיוק מקסימלי
+        score = getattr(item, 'match_score', 0) * 1000
+        title = get_item_title(item).lower()
+        content = get_item_text(item).lower()
+        full_text = title + " " + content
+        
+        if search_query.lower() in full_text: score += 1000000
+        
+        unique_matches = sum(1 for word in words if word in full_text)
+        score += (unique_matches ** 4) * 50000 
+        
+        for word in words:
+            score += full_text.count(word) * 10 
+            
+        return score
+        
+    candidates.sort(key=get_score, reverse=True)
+    return candidates[:limit]
+
+def get_smart_content(text, query_words, max_chars=40000):
     if not text: return ""
     if len(text) <= max_chars: return text
-    keep_start = int(max_chars * 0.3) 
-    keep_end = int(max_chars * 0.7)   
-    return text[:keep_start] + "\n\n... [דיוני ביניים הוסרו לטובת קיצור] ...\n\n" + text[-keep_end:]
+    if not query_words: return text[:max_chars]
+    
+    # אלגוריתם שסורק ספרים ארוכים וקורא בדיוק את הפסקה הרלוונטית כדי למנוע חיתוך התשובה
+    best_idx = 0
+    max_score = -1
+    chunk_size = max_chars
+    step = chunk_size // 2 
+    
+    text_lower = text.lower()
+    for i in range(0, len(text), step):
+        chunk = text_lower[i:i+chunk_size]
+        score = sum(chunk.count(w.lower()) for w in query_words)
+        if score > max_score:
+            max_score = score
+            best_idx = i
+            
+    start = max(0, best_idx)
+    end = min(len(text), start + chunk_size)
+    return ("... " if start > 0 else "") + text[start:end] + (" ..." if end < len(text) else "")
+
 
 @csrf_exempt
 def ai_chat_endpoint(request):
     if request.method == 'POST':
         try:
+            API_KEY = os.environ.get('GEMINI_API_KEY', '').strip()
+            if not API_KEY:
+                return JsonResponse({'answer': 'שגיאה: מפתח ה-API של המודל לא מוגדר בשרת.'})
+
             data = json.loads(request.body)
             user_question = data.get('question', '')
             mode = data.get('mode', 'content') 
             
             if not user_question: return JsonResponse({'answer': 'אנא כתוב שאלה.'})
-            models_to_try = ['gemma-4-26b-a4b-it', 'gemini-1.5-flash', 'gemini-2.0-flash']
 
+            prompt = ""
+            relevant_items = []
+            
             if mode == 'nav':
-                prompt = f"""אתה עוזר וירטואלי חייכן ומסביר פנים שתפקידו לעזור לגולשים לנווט ולהתמצא באתר. הגולש שואל אותך: '{user_question}' - חובה להפנות לעמוד הנכון ולשלב קישור."""
-                final_response = None
-                for m in models_to_try:
-                    try:
-                        response = client.models.generate_content(model=m, contents=prompt)
-                        final_response = response.text
-                        break 
-                    except Exception as e: continue
-                if final_response: return JsonResponse({'answer': final_response.replace('*', '')})
-                else: return JsonResponse({'answer': 'עומס כבד בשרתי ה-AI. אנא נסה שוב.'})
-
+                nav_context = """
+                להלן מפת הקישורים והפונקציות של האתר שלנו (חובה להשתמש *אך ורק* במידע זה):
+                
+                **עמודים באתר:**
+                - דף הבית: /
+                - צור קשר / יצירת קשר: /contact/
+                - אודות: /about/
+                - שאלות ותשובות (שו"ת): /qa/
+                - ספרים / חנות ספרים: /books/
+                - מחשבון מידות אורך: /calculator/
+                - מחשבון מידות נפח: /volume_calculator/
+                - מחשבון מידות משקל: /weight_calculator/
+                - עגלת קניות / סל קניות: /cart/
+                - קופה / תשלום: /checkout/
+                - אינדקס מאמרים: /article_index/
+                - פרשת שבוע: /parasha/
+                - נוספו לאחרונה: /recently_added/
+                - תנאי שימוש: /terms/
+                
+                **ממשק ופונקציות באתר:**
+                - תאורת לילה / מצב לילה / מצב חשוך (Dark Mode): יש באתר כפתור מובנה להחלפה לתאורת לילה. אם הגולש שואל על כך, הסבר לו שהוא יכול פשוט ללחוץ על הכפתור/האייקון של תאורת הלילה שמופיע באתר (בדרך כלל למעלה בסרגל הניווט) ואין צורך בקישור לשם כך.
+                """
+                prompt = f"אתה עוזר וירטואלי חייכן ומסביר פנים באתר 'ספריית לייבוביץ'. תפקידך לעזור לגולשים לנווט באתר ולהכיר את הפונקציות שלו.\n{nav_context}\nהגולש שואל אותך: '{user_question}'\nחובה עליך לענות בנימוס ולהסביר לגולש, או להפנות לעמוד הנכון מתוך הרשימה. חשוב מאוד: שלב קישור בפורמט מרקדאון רק עם הנתיב היחסי כפי שהוא כתוב (לדוגמה: [טקסט](/contact/)), בשום אופן אל תוסיף http או כתובות דומיין כמו example.com."
             else:
                 clean_question = re.sub(r'[^\w\s]', '', user_question)
                 words = clean_question.split()
-                valid_words = [w for w in words if len(w) > 1 and w not in ['מהי', 'מהו', 'האם', 'כיצד', 'איך', 'את', 'על', 'לי', 'תסביר', 'מתי', 'למה', 'מדוע', 'של', 'לו', 'אני', 'רוצה', 'לדעת', 'מה', 'מי', 'הוא', 'היא', 'הם', 'הן', 'יש', 'אין']]
+                stopwords = ['מהי', 'מהו', 'האם', 'כיצד', 'איך', 'את', 'על', 'לי', 'תסביר', 'מתי', 'למה', 'מדוע', 'של', 'לו', 'אני', 'רוצה', 'לדעת', 'מה', 'מי', 'הוא', 'היא', 'הם', 'הן', 'יש', 'אין', 'כמו', 'לגבי', 'בבקשה', 'היי', 'שלום', 'כמה', 'זה', 'אילו', 'איזה', 'איזו', 'היכן', 'איפה', 'מאיפה', 'כדי', 'כי', 'גם', 'רק', 'כל', 'כך']
+                valid_words = [w for w in words if len(w) > 1 and w not in stopwords]
                 
-                relevant_articles = []
-                relevant_sections = []
+                search_query = " ".join(valid_words)
 
-                try:
-                    exact_q = Q(title__icontains=clean_question) | Q(content__icontains=clean_question)
-                    relevant_articles = list(Article.objects.filter(exact_q).filter(is_published=True).distinct()[:1])
-                    relevant_sections = list(Section.objects.filter(exact_q).select_related('chapter', 'chapter__book').distinct()[:2])
-
-                    if not relevant_articles and not relevant_sections and valid_words:
-                        or_q = Q()
-                        for word in valid_words: or_q |= Q(title__icontains=word) | Q(content__icontains=word)
-                        if not or_q: or_q = Q(title__icontains=clean_question) | Q(content__icontains=clean_question)
-
-                        potential_articles = list(Article.objects.filter(or_q).filter(is_published=True).distinct()[:20])
-                        potential_sections = list(Section.objects.filter(or_q).select_related('chapter', 'chapter__book').distinct()[:30])
+                if search_query:
+                    # הזרקת המודלים בצורה ישירה וקשיחה לוודא סריקה של כל מה שקיים באדמין
+                    models_to_search = [Article, Section, Chapter, Book]
+                    try:
+                        from .models import QA
+                        models_to_search.append(QA)
+                    except: pass
                         
-                        def score_item(item):
-                            t_val = str(getattr(item, 'title', ''))
-                            c_val = str(getattr(item, 'content', getattr(item, 'text', '')))
-                            text = (t_val + " " + c_val).lower()
-                            score = sum(1 for w in valid_words if w in text)
-                            for i in range(len(valid_words)-1):
-                                if valid_words[i] + " " + valid_words[i+1] in text: score += 10
-                            return score
-                            
-                        relevant_articles = sorted(potential_articles, key=score_item, reverse=True)[:1]
-                        relevant_sections = sorted(potential_sections, key=score_item, reverse=True)[:2]
-                except:
-                    pass
+                    for model in models_to_search:
+                        fields = get_text_fields(model)
+                        if fields:
+                            try:
+                                items = ai_document_search(model.objects.all(), search_query, fields, valid_words, limit=4)
+                                relevant_items.extend(items)
+                            except Exception:
+                                pass
 
-                if not relevant_articles and not relevant_sections:
-                    return JsonResponse({'answer': 'מצטער, לא מצאתי מידע בנושא זה. נסה לנסח אחרת.'})
+                if not relevant_items:
+                    return JsonResponse({'answer': 'מצטער, לא הצלחתי לאתר חומרים רלוונטיים במאגרי הספרייה לשאלתך. נסה לנסח אחרת.'})
                     
                 context_text = ""
-                MAX_CHARS = 15000 
-                for article in relevant_articles: context_text += f"מקור: {article.title}\n{get_smart_content(str(article.content or ''), MAX_CHARS)}\n\n"
-                for section in relevant_sections: context_text += f"מקור: סעיף {getattr(section, 'title', section.id)}\n{get_smart_content(str(getattr(section, 'content', getattr(section, 'text', ''))), MAX_CHARS)}\n\n"
+                MAX_CHARS = 40000 
+                
+                seen_items = set()
+                unique_relevant_items = []
+                
+                def get_global_score(item):
+                    score = getattr(item, 'match_score', 0) * 1000
+                    full_text = get_item_title(item).lower() + " " + get_item_text(item).lower()
+                    if search_query.lower() in full_text: score += 50000
+                    unique_matches = sum(1 for word in valid_words if word in full_text)
+                    score += (unique_matches ** 4) * 5000 
+                    return score
+
+                relevant_items.sort(key=get_global_score, reverse=True)
+                
+                for item in relevant_items:
+                    item_key = f"{item.__class__.__name__}_{item.pk}"
+                    if item_key not in seen_items:
+                        seen_items.add(item_key)
+                        unique_relevant_items.append(item)
+                        if len(unique_relevant_items) >= 4: break
+
+                for item in unique_relevant_items: 
+                    title = get_item_title(item)
+                    content = get_item_text(item)
+                    if content:
+                        context_text += f"--- מקור: '{title}' ---\n{get_smart_content(content, valid_words, MAX_CHARS)}\n\n"
                     
-                prompt = f"אתה סייע תורני חכם באתר 'ספריית לייבוביץ'. ענה על השאלה: '{user_question}' מתוך המקורות המצורפים.\nמקורות:\n{context_text}"
-                final_response = None
-                for m in models_to_try:
+                prompt = f"""אתה רב וסייע תורני חכם מטעם 'ספריית לייבוביץ'.
+הגולש שואל אותך: '{user_question}'
+
+כלל ברזל 1: חובה עליך לענות **אך ורק** על סמך הטקסטים המצורפים מטה (שהם המקורות שאותרו מתוך מאגר הספרייה). 
+כלל ברזל 2: אם התשובה לשאלה אינה מופיעה במפורש בטקסטים אלו, אסור לך להמציא פסיקה, אסור לך להסתמך על ידע חיצוני שיש לך, ואסור לך לנתח את המקורות כדי להראות למה הם לא קשורים. עליך לכתוב בדיוק את המשפט הבא בלבד: "מצטער, לא מצאתי לכך התייחסות מפורשת במקורות שנסרקו בספרייה."
+
+אם התשובה כן קיימת במקורות שקיבלת, כתוב אותה בפירוט, בצורה הלכתית ומכובדת (השתמש בפסקאות לסדר את המידע). חובה עליך לציין בגוף התשובה במפורש את השם המדויק של המקור (בדיוק כפי שהוא מופיע בין המקפים בטקסט המקורות) שעליו הסתמכת.
+
+מקורות הספרייה:
+{context_text}"""
+            
+            KNOWN_GOOD_MODELS = [
+                'models/gemini-flash-lite-latest',
+                'models/gemini-pro-latest'
+            ] 
+            
+            final_response = None
+            last_error = ""
+
+            def fetch_from_google(model_name):
+                url = f"https://generativelanguage.googleapis.com/v1beta/{model_name}:generateContent?key={API_KEY}"
+                payload = {"contents": [{"parts": [{"text": prompt}]}]}
+                data_bytes = json.dumps(payload, ensure_ascii=False).encode('utf-8')
+                req = urllib.request.Request(url, data=data_bytes, headers={'Content-Type': 'application/json'})
+                response = urllib.request.urlopen(req, timeout=25)
+                resp_data = json.loads(response.read().decode('utf-8'))
+                return resp_data.get('candidates', [{}])[0].get('content', {}).get('parts', [{}])[0].get('text', '')
+
+            with concurrent.futures.ThreadPoolExecutor(max_workers=len(KNOWN_GOOD_MODELS)) as executor:
+                future_to_model = {executor.submit(fetch_from_google, model): model for model in KNOWN_GOOD_MODELS}
+                
+                for future in concurrent.futures.as_completed(future_to_model):
                     try:
-                        response = client.models.generate_content(model=m, contents=prompt)
-                        final_response = response.text
-                        break 
-                    except Exception: continue
+                        result = future.result()
+                        if result:
+                            final_response = result
+                            break
+                    except Exception as e:
+                        last_error = str(e)
+
+            if final_response: 
+                if mode == 'nav':
+                    final_response = re.sub(r'\[([^\]]+)\]\(([^)]+)\)', r'<a href="\2" target="_self" style="color: #2575fc; font-weight: bold; text-decoration: underline;">\1</a>', final_response)
+                else:
+                    final_response = re.sub(r'\[([^\]]+)\]\(([^)]+)\)', r'<a href="\2" target="_blank" style="color: #d4af37; font-weight: bold; text-decoration: underline;">\1</a>', final_response)
                 
-                if final_response: return JsonResponse({'answer': final_response.replace('*', '')})
-                else: return JsonResponse({'answer': 'עומס כבד בשרתי ה-AI. אנא נסה שוב בעוד מספר שניות.'})
+                final_response = final_response.replace('*', '')
+
+                if mode != 'nav' and unique_relevant_items and "לא מצאתי לכך התייחסות מפורשת" not in final_response:
+                    sources_added = False
+                    sources_list_html = ""
+                    
+                    for item in unique_relevant_items:
+                        title = get_item_title(item)
+                        if title and title in final_response:
+                            url = "#"
+                            try:
+                                item_model = item.__class__.__name__
+                                if item_model == 'Article':
+                                    url = reverse('articles:detail', args=[item.pk])
+                                elif item_model == 'Book':
+                                    url = reverse('articles:book_detail', args=[item.pk])
+                                elif item_model == 'Chapter':
+                                    if hasattr(item, 'book'):
+                                        url = reverse('articles:book_detail', args=[item.book.pk])
+                                elif item_model == 'Section':
+                                    if hasattr(item, 'chapter') and hasattr(item.chapter, 'book'):
+                                        url = reverse('articles:book_detail', args=[item.chapter.book.pk])
+                                    elif hasattr(item, 'book'):
+                                        url = reverse('articles:book_detail', args=[item.book.pk])
+                                else:
+                                    try:
+                                        url = reverse(f'articles:{item_model.lower()}_detail', args=[item.pk])
+                                    except: pass
+                            except Exception: 
+                                pass
+                                
+                            if url != "#":
+                                sources_list_html += f"<li style='margin-bottom: 5px;'><a href='{url}' target='_blank' style='color: #d4af37; font-weight: bold; text-decoration: underline;'>{title}</a></li>"
+                                sources_added = True
+
+                    if sources_added:
+                        sources_html = "<br><br><div style='margin-top: 15px; padding-top: 10px; border-top: 1px solid #e0e0e0; font-size: 0.95em;'>"
+                        sources_html += "<strong>📚 מקורות מהספרייה (לחיץ):</strong><ul style='margin-top: 8px; padding-right: 20px; list-style-type: square;'>"
+                        sources_html += sources_list_html
+                        sources_html += "</ul></div>"
+                        final_response += sources_html
+
+                return JsonResponse({'answer': final_response})
+            else: 
+                return JsonResponse({'answer': f'שגיאה בחיבור למודלים (מקבילי). שגיאה אחרונה: {last_error}'})
                 
-        except Exception:
-            return JsonResponse({'answer': 'שגיאת שרת פנימית. אנא רענן את העמוד.'})
+        except Exception as e:
+            return JsonResponse({'answer': f'שגיאת שרת פנימית (views): {str(e)}'})
     return JsonResponse({'error': 'Invalid method'}, status=400)
 
 
@@ -226,16 +429,12 @@ def article_list(request):
             'parasha_article': None, 'jewish_cal': None, 'query': query, 'current_page': 'home'
         })
         
-    # ===============================================
-    # מנגנון "ערבוב חכם יומי" (Smart Daily Shuffle)
-    # ===============================================
     today_str = str(datetime.date.today())
     cache_key = f'home_dynamic_content_{today_str}'
     
     dynamic_content = cache.get(cache_key)
     
     if not dynamic_content:
-        # 1. מאמר פרשה אקראי (רק אלו ששויכו לפרשה אמיתית)
         parasha_article = Article.objects.filter(is_published=True).exclude(
             Q(parasha__isnull=True) | 
             Q(parasha__exact='') | 
@@ -244,16 +443,12 @@ def article_list(request):
             Q(parasha__icontains='general')
         ).order_by('?').first()
         
-        # 2. מאמרים אחרונים אקראיים מתוך ה-15 האחרונים (שומר על עדכניות אך מגוון)
         recent_15 = list(Article.objects.filter(is_published=True).order_by('-created_at')[:15])
         if parasha_article and parasha_article in recent_15:
             recent_15.remove(parasha_article)
         latest_articles = random.sample(recent_15, min(2, len(recent_15)))
         
-        # 3. 3 ספרים לקריאה אקראיים
         reading_books = list(Book.objects.filter(is_for_sale=False).order_by('?')[:3])
-        
-        # 4. 3 ספרים למכירה אקראיים
         sale_books = list(Book.objects.filter(is_for_sale=True).order_by('?')[:3])
         
         dynamic_content = {
@@ -262,16 +457,13 @@ def article_list(request):
             'reading_books': reading_books,
             'sale_books': sale_books
         }
-        # שמירה במטמון - כל יום ייווצר עמוד בית חדש
         cache.set(cache_key, dynamic_content, 60 * 60 * 24)
         
-    # חילוץ התוכן שנשמר
     parasha_article = dynamic_content['parasha_article']
     latest_articles = dynamic_content['latest_articles']
     reading_books = dynamic_content['reading_books']
     sale_books = dynamic_content['sale_books']
 
-    # 5. הגרלת שאלה אקראית לשו"ת (מתוך 7 השאלות האחרונות)
     latest_qa = None
     try:
         from .models import QA
@@ -281,7 +473,6 @@ def article_list(request):
     except Exception:
         pass
         
-    # שליפת המידע מהלוח העברי (פרשה, הפטרה, צומות ומועדים של השבוע הנוכחי)
     jewish_cal = get_jewish_calendar_info()
     
     return render(request, 'articles/article_list.html', {
@@ -294,7 +485,6 @@ def article_list(request):
         'jewish_cal': jewish_cal,
         'current_page': 'home'
     })
-
 
 def article_detail(request, pk):
     article = get_object_or_404(Article, pk=pk, is_published=True)
@@ -333,14 +523,25 @@ def contact(request):
         if not message: message = "[הגולש לא כתב תוכן]"
 
         recaptcha_response = request.POST.get('g-recaptcha-response')
+        
+        if not recaptcha_response:
+            messages.error(request, 'שגיאת אבטחה: לא התקבל אימות reCAPTCHA. אנא ודא שהדפדפן שלך אינו חוסם סקריפטים ונסה שוב.')
+            return redirect('articles:contact')
+
         secret_key = '6LfC_VQtAAAAALw4ZpGG41Lvum-8VuMEMlTztvxQ' 
         data = urllib.parse.urlencode({'secret': secret_key, 'response': recaptcha_response}).encode('utf-8')
-        req = urllib.request.Request('https://www.google.com/recaptcha/api/siteverify', data=data)
-        response = urllib.request.urlopen(req)
-        result = json.loads(response.read().decode('utf-8'))
         
-        if not result.get('success'):
-            messages.error(request, 'שגיאת אימות: המערכת זיהתה פעילות חשודה. נסה שוב.')
+        try:
+            req = urllib.request.Request('https://www.google.com/recaptcha/api/siteverify', data=data)
+            response = urllib.request.urlopen(req, timeout=10)
+            result = json.loads(response.read().decode('utf-8'))
+            
+            if not result.get('success'):
+                error_codes = result.get('error-codes', ['unknown_error'])
+                messages.error(request, f'שגיאת אימות מול שרתי גוגל. קוד השגיאה: {error_codes}. נא לוודא שהמפתחות תקינים במסוף של גוגל.')
+                return redirect('articles:contact')
+        except Exception as e:
+            messages.error(request, f'שגיאת תקשורת עם שרתי האבטחה: {str(e)}')
             return redirect('articles:contact')
 
         full_message = f"התקבלה פנייה חדשה מאתר הספרייה:\n\nשם: {name}\nטלפון: {phone}\nאימייל: {email}\nנושא הפנייה: {subject}\n\nהודעה:\n{message}"
@@ -354,8 +555,8 @@ def contact(request):
                 fail_silently=False,
             )
             messages.success(request, 'תודה! הודעתך נשלחה בהצלחה.')
-        except Exception:
-            messages.success(request, 'הפנייה התקבלה במערכת (מצב פיתוח).')
+        except Exception as e:
+            messages.success(request, f'הפנייה התקבלה, אך שרת המיילים החזיר שגיאה: {e}')
         return redirect('articles:contact')
 
     return render(request, 'articles/contact.html', {'current_page': 'contact'})

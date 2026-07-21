@@ -610,5 +610,56 @@
             const progressBar = document.getElementById("reading-progress-bar"); if (progressBar) { progressBar.style.width = scrolled + "%"; }
         });
     </script>
+   <!-- תחילת תיקון גלובלי לסמל האבטחה של גוגל לכל עמודי האתר -->
+<style>
+    /* מוודא שההזזה של הסמל החוצה לא תיצור פס גלילה תחתון מציק באתר */
+    body {
+        overflow-x: hidden !important;
+    }
+
+    body > .grecaptcha-badge, 
+    .grecaptcha-badge {
+        display: block !important;
+        visibility: visible !important;
+        position: fixed !important;
+        bottom: 25px !important;
+        
+        /* מחזירים לרוחב המקורי המלא */
+        width: 256px !important; 
+        
+        /* מצמידים לימין */
+        right: 0px !important; 
+        
+        /* דוחפים את הטקסט הימני 186 פיקסלים מחוץ למסך, ומשאירים בדיוק את 70 הפיקסלים של הגלגל בפנים */
+        transform: translateX(186px) !important;
+        
+        transition: transform 0.3s ease-in-out !important;
+        z-index: 2147483647 !important; 
+        border-radius: 8px 0 0 8px !important;
+        box-shadow: -2px 0px 10px rgba(0,0,0,0.1) !important;
+    }
+
+    /* במעבר עכבר - מחליקים את הכל בחזרה למיקום ה-0 התקין */
+    body > .grecaptcha-badge:hover,
+    .grecaptcha-badge:hover {
+        transform: translateX(0px) !important; 
+    }
+</style>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // עוקר את הסמל מכל קונטיינר שחותך אותו, ומעביר אותו ישירות ל-body
+        const breakOutInterval = setInterval(() => {
+            const badge = document.querySelector('.grecaptcha-badge');
+            if (badge) {
+                clearInterval(breakOutInterval);
+                if (badge.parentElement !== document.body) {
+                    document.body.appendChild(badge);
+                }
+            }
+        }, 100);
+    });
+</script>
+<!-- סוף תיקון גלובלי -->
 </body>
 </html>
