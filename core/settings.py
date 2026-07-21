@@ -15,6 +15,8 @@ import dj_database_url
 from pathlib import Path
 from dotenv import load_dotenv
 import dj_database_url
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
 
 # טוען את הסודות מקובץ ה-.env (אם קיים)
 load_dotenv()
@@ -191,3 +193,14 @@ CACHES = {
         'LOCATION': 'leibowitz_fast_cache',
     }
 }
+
+# שואב את המפתח בצורה מאובטחת
+SENTRY_DSN = os.environ.get('SENTRY_DSN', '').strip()
+
+if SENTRY_DSN:
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        integrations=[DjangoIntegration()],
+        traces_sample_rate=1.0,
+        send_default_pii=True
+    )
