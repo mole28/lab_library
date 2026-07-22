@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from django.views.generic import TemplateView
 
 # השם הזה חשוב, בגלל שאנחנו קוראים לקישורים בתבניות בצורה כזו: 'articles:about'
 app_name = 'articles'
@@ -55,4 +56,7 @@ urlpatterns = [
     path('about/', views.about, name='about'),
     path('terms/', views.terms, name='terms'),
     path('recently-added/', views.recently_added, name='recently_added'),
+
+    path('manifest.json', TemplateView.as_view(template_name='manifest.json', content_type='application/json')),
+    path('sw.js', TemplateView.as_view(template_name='sw.js', content_type='application/javascript')),
 ]
