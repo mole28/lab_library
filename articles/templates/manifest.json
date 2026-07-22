@@ -2,6 +2,8 @@
   "name": "Leb Library",
   "short_name": "LebLibrary",
   "description": "The premium library platform",
+  "id": "/",
+  "categories": ["books", "education", "utilities"],
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
