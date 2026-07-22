@@ -5,6 +5,7 @@ from django.conf.urls.static import static
 from django.http import HttpResponse
 from django.contrib.sitemaps.views import sitemap
 from core.sitemaps import StaticViewSitemap, ArticleSitemap
+from django.views.generic import TemplateView
 
 # איחוד כל מפות האתר למילון אחד
 sitemaps = {
@@ -32,6 +33,8 @@ urlpatterns = [
     # --- נתיבים עבור SEO ובוטים של AI ---
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
     path('robots.txt', robots_txt, name='robots_file'),
+    path('manifest.json', TemplateView.as_view(template_name="articles/manifest.json", content_type="application/json")),
+    path('service-worker.js', TemplateView.as_view(template_name="articles/sw.js", content_type="application/javascript")),
 ]
 
 # הוספת נתיב לטעינת קבצי מדיה (תמונות) בסביבת פיתוח
