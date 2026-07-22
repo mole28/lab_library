@@ -14,7 +14,6 @@ import os
 import dj_database_url
 from pathlib import Path
 from dotenv import load_dotenv
-import dj_database_url
 import sentry_sdk
 from sentry_sdk.integrations.django import DjangoIntegration
 
@@ -29,15 +28,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-# לוקח את המפתח הסודי מהקובץ הנסתר, או משתמש בברירת מחדל
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-5^ip_@z$(vgsa#06rkrt$$i712i6#+8*$la%oc=$$0*b(t@v5h')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-# אם כתוב בקובץ הנסתר True זה יהיה דלוק, אחרת (בשרת האמיתי) זה יכבה אוטומטית!
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-# מאפשר לאתר לעבוד בכל כתובת
-ALLOWED_HOSTS = ['*']
+# רשימת המארחים המורשים כוללת את הדומיין החדש שלך וכתובת ה-IP
+ALLOWED_HOSTS = ['leblibrary.co.il', 'www.leblibrary.co.il', '5.75.224.152', '127.0.0.1', 'localhost']
 
 
 # Application definition
@@ -56,7 +53,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware', # <--- תוספת לניהול קבצים סטטיים בייצור
+    'whitenoise.middleware.WhiteNoiseMiddleware', # ניהול קבצים סטטיים בייצור
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -152,7 +149,6 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
 EMAIL_HOST_USER = 'moshe111moshe111@gmail.com' 
-# זו חייבת להיות "סיסמת אפליקציה" מגוגל ולא סיסמת המייל הרגילה!
 EMAIL_HOST_PASSWORD = 'rnzbgeruqpfrtvko' 
 
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
@@ -161,6 +157,11 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 # ==========================================
 # Production Security & HTTPS Settings
 # ==========================================
+# חובה מאחורי Nginx כדי שדנג'ו יזהה שמדובר בחיבור מאובטח וימנע לופים של הפניות
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
+USE_X_FORWARDED_PORT = True
+
 if not DEBUG:
     # מאלץ הפניה אוטומטית מ-HTTP ל-HTTPS בסביבת ייצור
     SECURE_SSL_REDIRECT = True

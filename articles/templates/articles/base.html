@@ -17,6 +17,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700&family=Frank+Ruhl+Libre:wght@400;700&display=swap" rel="stylesheet">
     
+    <!-- הוספת async defer לטעינה אסינכרונית כדי לא לעכב את טעינת הדף -->
     <script src="https://www.google.com/recaptcha/api.js?render=6LfC_VQtAAAAAGC81qfJWQpnMGlbgaTD91finoP6" async defer></script>
     
     <style>
@@ -39,7 +40,10 @@
         .card { transition: transform 0.2s, box-shadow 0.2s, background-color 0.4s ease, border-color 0.4s ease; border: none; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         .card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
         
+        /* מחלקה מיוחדת לרקע לבן שהופך לכהה במצב לילה */
         .content-card-bg { background-color: #ffffff; transition: background-color 0.4s ease; }
+
+        /* מעטפת התוכן המרכזית */
         .content-wrapper { flex: 1; width: 100%; max-width: 100%; margin: 0; padding-bottom: 50px; }
         .container-main { max-width: 1300px; margin: 0 auto; width: 100%; }
         .grecaptcha-badge { z-index: 1040 !important; }
@@ -53,7 +57,7 @@
         .reveal-up.is-visible { opacity: 1; transform: translateY(0); }
 
         /* ========================================== */
-        /* תפריט עליון */
+        /* תפריט עליון - תוקן לעובי דק ואלגנטי! */
         /* ========================================== */
         .top-navbar {
             background-color: #3f4050; min-height: 70px; display: flex; align-items: center; box-shadow: 0 2px 15px rgba(0,0,0,0.2); z-index: 1040; width: 100%; position: relative; transition: background-color 0.4s ease, min-height 0.3s ease;
@@ -65,88 +69,113 @@
         .nav-link-custom { color: #ffffff; text-decoration: none; font-size: 1.25rem; font-weight: 600; display: flex; align-items: center; gap: 8px; white-space: nowrap; transition: color 0.2s; }
         .nav-link-custom:hover { color: #d4af37; }
         .nav-link-custom i { font-size: 1.45rem; transition: transform 0.2s; }
-        
         .nav-left-absolute { position: absolute; left: 30px; display: flex; align-items: center; gap: 15px; white-space: nowrap; }
         html[dir="ltr"] .nav-left-absolute { left: auto; right: 30px; }
-        
         .rights-text { color: #dc3545; font-size: 0.85rem; line-height: 1.2; text-align: left; }
         .lang-btn-custom { background: transparent; border: none; padding: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.2s; }
         .lang-btn-custom:hover { transform: scale(1.05); }
         .lang-flag-custom { width: 28px; height: auto; border-radius: 2px; box-shadow: 0 1px 3px rgba(0,0,0,0.3); margin-bottom: 3px; }
         .lang-text-custom { color: #ffffff; font-size: 0.85rem; font-weight: 700; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); line-height: 1; }
 
+        /* כפתור מצב קריאה לילה ואייקון עגלה צידי */
         .dark-mode-toggle-btn, .cart-icon-btn { background: transparent; border: 1px solid rgba(212, 175, 55, 0.6); color: #d4af37; width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.2); text-decoration: none; }
         .dark-mode-toggle-btn:hover, .cart-icon-btn:hover { background: rgba(212, 175, 55, 0.15); transform: scale(1.1); box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3); color: #d4af37; }
         html[dir="ltr"] .dark-mode-toggle-btn { margin-left: 0; margin-right: 15px; }
 
+        /* כפתור המבורגר ייעודי למובייל */
         .custom-hamburger { display: none; background: transparent; border: 1px solid #d4af37; color: #d4af37; font-size: 2rem; border-radius: 6px; padding: 2px 12px; cursor: pointer; transition: all 0.3s ease; }
         .custom-hamburger:hover { background: rgba(212, 175, 55, 0.1); box-shadow: 0 0 10px rgba(212, 175, 55, 0.3); }
 
+        /* עיצוב הלשונית הפעילה (Active State) */
         .nav-link-custom.active { color: #d4af37; text-shadow: 0 0 10px rgba(212, 175, 55, 0.5); border-bottom: 2px solid #d4af37; padding-bottom: 3px; }
         .nav-link-custom.active i { color: #d4af37; text-shadow: 0 0 12px rgba(212, 175, 55, 0.8); }
 
         @media (min-width: 1381px) {
+            /* מבטל את ההסתרה של בוטסטראפ בדסקטופ ושומר על מבנה ה-Flex המקורי */
             .mobile-nav-header, #navbarCollapseContent { display: contents !important; }
             .collapse:not(.show) { display: contents !important; } 
         }
 
-        /* שבירת תפריט לטאבלט ונייד - התיקון המרכזי כאן! */
+        /* שבירת תפריט לטאבלט ומובייל - תיקון תצוגה אטומה ובולטת מעל הכל */
         @media (max-width: 1380px) {
-            .top-navbar { 
-                height: auto !important; 
-                padding: 15px 0 !important; 
-                align-items: flex-start !important; 
-            }
-            .nav-aligned-container { 
-                flex-direction: column !important; 
-                align-items: stretch !important; 
-                padding: 0 20px !important; 
-                width: 100% !important; 
-            }
-            .mobile-nav-header { 
-                display: flex !important; 
-                justify-content: space-between !important; 
-                align-items: center !important; 
-                width: 100% !important; 
-            }
-            .custom-hamburger { display: block !important; }
-            .custom-hamburger:focus { outline: none !important; box-shadow: 0 0 10px rgba(212, 175, 55, 0.4) !important; }
+            .top-navbar { padding: 15px 0; align-items: flex-start; position: relative !important; overflow: visible !important; }
+            .nav-aligned-container { flex-direction: column; align-items: stretch; padding: 0 20px; width: 100%; position: relative !important; }
             
-            #navbarCollapseContent:not(.show):not(.collapsing) { display: none !important; }
+            .mobile-nav-header { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+            .custom-hamburger { display: block; z-index: 1060; }
+            
+            #navbarCollapseContent.collapse:not(.show) { display: none !important; }
+            
+            /* הפיכת התפריט הנפתח במובייל לקופסה אטומה ובולטת מעל הכל */
+            #navbarCollapseContent.collapse.show,
             #navbarCollapseContent.show { 
                 display: flex !important; 
                 flex-direction: column !important; 
                 align-items: center !important; 
+                position: absolute !important;
+                top: 100% !important;
+                left: 0 !important;
+                right: 0 !important;
                 width: 100% !important; 
-                margin-top: 20px !important; 
-                gap: 15px !important; 
-                padding-bottom: 10px !important;
+                background-color: #3f4050 !important;
+                opacity: 1 !important;
+                z-index: 9999999 !important;
+                padding: 25px 15px 30px 15px !important;
+                box-shadow: 0 25px 50px rgba(0, 0, 0, 0.9) !important;
+                border-bottom: 4px solid #d4af37 !important;
+                margin: 0 !important;
             }
             
             .nav-separator { display: none !important; } 
             
-            /* כאן כפינו על הכפתורים לחזור לתוך התפריט ולא ליפול למטה */
-            .nav-left-absolute { 
-                position: relative !important; 
-                left: auto !important; 
-                right: auto !important; 
-                top: auto !important; 
-                bottom: auto !important; 
-                display: flex !important; 
-                justify-content: center !important; 
-                flex-wrap: wrap !important; 
-                width: 100% !important; 
-                margin-top: 15px !important; 
-                gap: 20px !important; 
-                padding-top: 20px !important; 
-                border-top: 1px solid rgba(212,175,55,0.2) !important; 
+            #navbarCollapseContent.collapse.show .nav-link-custom,
+            #navbarCollapseContent.show .nav-link-custom {
+                display: flex !important;
+                width: 100% !important;
+                max-width: 320px !important;
+                justify-content: center !important;
+                align-items: center !important;
+                padding: 14px 0 !important;
+                margin: 6px 0 !important;
+                font-size: 1.25rem !important;
+                color: #ffffff !important;
+                background: rgba(255, 255, 255, 0.08) !important;
+                border-radius: 8px !important;
+                border-bottom: none !important;
+                text-align: center !important;
             }
-            
-            .nav-link-custom { 
-                padding: 12px !important; 
-                width: 100% !important; 
-                justify-content: center !important; 
-                border-bottom: 1px solid rgba(255,255,255,0.05) !important; 
+
+            #navbarCollapseContent.collapse.show .nav-link-custom:hover,
+            #navbarCollapseContent.show .nav-link-custom:hover,
+            #navbarCollapseContent.collapse.show .nav-link-custom.active,
+            #navbarCollapseContent.show .nav-link-custom.active {
+                color: #d4af37 !important;
+                background: rgba(212, 175, 55, 0.2) !important;
+            }
+
+            #navbarCollapseContent.collapse.show .nav-left-absolute,
+            #navbarCollapseContent.show .nav-left-absolute {
+                position: relative !important;
+                display: flex !important;
+                flex-direction: row !important;
+                justify-content: center !important;
+                align-items: center !important;
+                flex-wrap: wrap !important;
+                width: 100% !important;
+                margin-top: 20px !important;
+                padding-top: 20px !important;
+                border-top: 1px solid rgba(212, 175, 55, 0.4) !important;
+                gap: 15px !important;
+                left: auto !important;
+                right: auto !important;
+            }
+
+            #navbarCollapseContent.collapse.show .rights-text,
+            #navbarCollapseContent.show .rights-text {
+                text-align: center !important;
+                width: 100% !important;
+                color: #ff6b6b !important;
+                margin-top: 8px !important;
             }
         }
 
@@ -225,6 +254,7 @@
         body.dark-mode .input-group .btn-light { background-color: #1e293b !important; border-color: #334155 !important; }
         body.dark-mode .input-group .btn-light svg { stroke: #d4af37 !important; }
         
+        /* סנכרון ה-AI עם מצב הלילה */
         body.dark-mode .modal-content { background-color: #0f172a !important; }
         body.dark-mode .nav-chat-box { background-color: #1e293b !important; border-color: #334155 !important; }
         body.dark-mode .nav-chat-bot, body.dark-mode .qa-chat-bot { background-color: #0f172a !important; border-color: #d4af37 !important; color: #e2e8f0 !important; }
@@ -284,10 +314,8 @@
         @media (max-width: 768px) {
             .hero-section { height: 260px !important; }
             .hero-content { transform: translateY(-10px); padding: 0 10px; }
-            
-            .elegant-search-form { padding: 5px 15px; }
-            .elegant-search-input { font-size: 1rem; padding: 8px 10px; }
-            
+            .elegant-search-form { padding: 4px 10px !important; }
+            .elegant-search-input { font-size: 0.8rem !important; padding: 6px 5px !important; }
             .article-content { font-size: 1.1rem; line-height: 1.6; }
             .article-text { font-size: 1rem; }
             .container-main { padding-left: 10px !important; padding-right: 10px !important; }
@@ -310,7 +338,6 @@
             html[dir="ltr"] .scroll-top-btn { right: 15px; }
             
             .footer-links { gap: 15px; flex-direction: column; text-align: center; }
-            
             .modal-dialog { margin: 10px; width: auto; }
             .nav-chat-box { height: 60vh; padding: 12px; }
             .nav-chat-bubble { max-width: 95%; font-size: 1rem; padding: 10px 15px; }
@@ -324,6 +351,7 @@
             @page { margin: 2cm; }
         }
     </style>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
 </head>
 <body>
 
@@ -367,14 +395,16 @@
     <header class="top-navbar">
         <div class="nav-aligned-container">
             
+            <!-- אזור עליון למובייל: לוגו והמבורגר -->
             <div class="mobile-nav-header">
                 <a class="nav-logo" href="{% url 'articles:list' %}" data-i18n="site_title">דף הבית</a>
                 
-                <button class="custom-hamburger" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapseContent" aria-expanded="false" aria-controls="navbarCollapseContent">
+                <button class="custom-hamburger" type="button" onclick="document.getElementById('navbarCollapseContent').classList.toggle('show')">
                     <i class="bi bi-list"></i>
                 </button>
             </div>
             
+            <!-- התוכן שמתקפל במובייל -->
             <div class="collapse" id="navbarCollapseContent">
                 
                 <span class="nav-separator"></span> 
@@ -402,7 +432,10 @@
                     <i class="bi bi-envelope"></i> <span data-i18n="nav_contact">צור קשר</span>
                 </a>
 
+                <!-- כפתורי שפה, מצב לילה ועגלת קניות -->
                 <div class="nav-left-absolute">
+                    
+                    <!-- אייקון העגלה החדש -->
                     <a href="{% url 'articles:cart_detail' %}" class="cart-icon-btn" title="עגלת קניות">
                         <i class="bi bi-cart3"></i>
                     </a>
@@ -432,6 +465,7 @@
         <span class="ai-side-text">עוזר AI להתמצאות באתר</span>
     </button>
 
+    <!-- הוספנו id="draggableQaPill" לחלונית ה-AI של השאלות ותשובות כדי שנוכל לגרור אותה -->
     <div id="draggableQaPill" class="qa-floating-pill">
         <div class="qa-pill-icon"><i class="bi bi-robot"></i></div>
         <div class="qa-pill-text">
@@ -447,6 +481,7 @@
         </div>
         {% endblock %}
         
+        <!-- *** תיקון רספונסיביות: שינוי שוליים במסכים קטנים (px-2 במקום px-4 קבוע) *** -->
         <main class="pt-4 px-2 px-md-4 container-main">
             {% block breadcrumbs %}{% endblock %}
             {% block content %}
@@ -614,7 +649,7 @@
             const observer = new IntersectionObserver((entries, observer) => { entries.forEach(entry => { if (entry.isIntersecting) { entry.target.classList.add('is-visible'); observer.unobserve(entry.target); } }); }, observerOptions);
             document.querySelectorAll('.reveal-up').forEach((el) => { observer.observe(el); });
             
-            // --- מנגנון גרירה (Drag) לחלונית ה-AI ---
+            // --- תוספת: מנגנון גרירה (Drag) לחלונית ה-AI ---
             const dragEl = document.getElementById('draggableQaPill');
             let isDragging = false, isClick = true;
             let currentX, currentY, initialX, initialY, xOffset = 0, yOffset = 0;
@@ -633,7 +668,7 @@
 
             function drag(e) {
                 if (isDragging) {
-                    e.preventDefault(); isClick = false; 
+                    e.preventDefault(); isClick = false; // ברגע שזזנו - זה גרירה ולא לחיצה
                     if (e.type === "touchmove") { currentX = e.touches[0].clientX - initialX; currentY = e.touches[0].clientY - initialY; } 
                     else { currentX = e.clientX - initialX; currentY = e.clientY - initialY; }
                     xOffset = currentX; yOffset = currentY;
@@ -643,6 +678,7 @@
 
             function setTranslate(xPos, yPos, el) { el.style.transform = `translate3d(${xPos}px, ${yPos}px, 0)`; }
 
+            // מאזיני עכבר ומגע לגרירה
             document.addEventListener("touchstart", dragStart, {passive: false});
             document.addEventListener("touchend", dragEnd, {passive: false});
             document.addEventListener("touchmove", drag, {passive: false});
@@ -651,6 +687,7 @@
             document.addEventListener("mouseup", dragEnd);
             document.addEventListener("mousemove", drag);
             
+            // פתיחת המודל (הצ'אט) רק אם זו לחיצה ולא גרירה
             dragEl.addEventListener('click', function(e) {
                 if (isClick) {
                     var aiModal = new bootstrap.Modal(document.getElementById('aiQAModal'));
@@ -660,6 +697,7 @@
                 }
             });
 
+            // רישום Service Worker עבור PWA
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.register('/static/service-worker.js');
             }
@@ -671,26 +709,56 @@
             const progressBar = document.getElementById("reading-progress-bar"); if (progressBar) { progressBar.style.width = scrolled + "%"; }
         });
     </script>
+   <!-- תחילת תיקון גלובלי לסמל האבטחה של גוגל לכל עמודי האתר -->
 <style>
-    body { overflow-x: hidden !important; }
-    body > .grecaptcha-badge, .grecaptcha-badge {
-        display: block !important; visibility: visible !important; position: fixed !important; bottom: 25px !important;
-        width: 256px !important; right: 0px !important; transform: translateX(186px) !important;
-        transition: transform 0.3s ease-in-out !important; z-index: 2147483647 !important; 
-        border-radius: 8px 0 0 8px !important; box-shadow: -2px 0px 10px rgba(0,0,0,0.1) !important;
+    /* מוודא שההזזה של הסמל החוצה לא תיצור פס גלילה תחתון מציק באתר */
+    body {
+        overflow-x: hidden !important;
     }
-    body > .grecaptcha-badge:hover, .grecaptcha-badge:hover { transform: translateX(0px) !important; }
+
+    body > .grecaptcha-badge, 
+    .grecaptcha-badge {
+        display: block !important;
+        visibility: visible !important;
+        position: fixed !important;
+        bottom: 25px !important;
+        
+        /* מחזירים לרוחב המקורי המלא */
+        width: 256px !important; 
+        
+        /* מצמידים לימין */
+        right: 0px !important; 
+        
+        /* דוחפים את הטקסט הימני 186 פיקסלים מחוץ למסך, ומשאירים בדיוק את 70 הפיקסלים של הגלגל בפנים */
+        transform: translateX(186px) !important;
+        
+        transition: transform 0.3s ease-in-out !important;
+        z-index: 2147483647 !important; 
+        border-radius: 8px 0 0 8px !important;
+        box-shadow: -2px 0px 10px rgba(0,0,0,0.1) !important;
+    }
+
+    /* במעבר עכבר - מחליקים את הכל בחזרה למיקום ה-0 התקין */
+    body > .grecaptcha-badge:hover,
+    .grecaptcha-badge:hover {
+        transform: translateX(0px) !important; 
+    }
 </style>
+
 <script>
     document.addEventListener("DOMContentLoaded", function() {
+        // עוקר את הסמל מכל קונטיינר שחותך אותו, ומעביר אותו ישירות ל-body
         const breakOutInterval = setInterval(() => {
             const badge = document.querySelector('.grecaptcha-badge');
             if (badge) {
                 clearInterval(breakOutInterval);
-                if (badge.parentElement !== document.body) { document.body.appendChild(badge); }
+                if (badge.parentElement !== document.body) {
+                    document.body.appendChild(badge);
+                }
             }
         }, 100);
     });
 </script>
+<!-- סוף תיקון גלובלי -->
 </body>
 </html>
