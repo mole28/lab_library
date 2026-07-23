@@ -31,7 +31,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-5^ip_@z$(vgsa#06rkrt$$i712i6#+8*$la%oc=$$0*b(t@v5h')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-# --- שינוי זמני ל-True כדי לאתר את שגיאת ה-500. חובה להחזיר ל-False אח"כ! ---
 DEBUG = os.environ.get('DEBUG', 'False') == 'True' 
 
 # רשימת המארחים המורשים כוללת את הדומיין שלך וכתובת ה-IP
@@ -47,8 +46,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django.contrib.sites',     # <--- הוסף: חובה עבור מפות אתר
-    'django.contrib.sitemaps',  # <--- התוספת למפת האתר
+    'django.contrib.sites',     # חובה עבור מפות אתר
+    'django.contrib.sitemaps',  # התוספת למפת האתר
     'sslserver',  # נוסף עבור הרצת שרת HTTPS מקומי לבדיקות
     'ckeditor',
     'articles',
@@ -61,10 +60,10 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware', # ניהול קבצים סטטיים בייצור
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'articles.middleware.VisitorTrackingMiddleware'
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'articles.middleware.VisitorTrackingMiddleware',  # מוקם אחרי אימות המשתמש (כולל פסיק תקין)
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
