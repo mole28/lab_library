@@ -1,6 +1,5 @@
 from django.contrib import admin
-from .models import Article, Book, Chapter, Section, Cart, CartItem, Order, OrderItem
-from .models import QA
+from .models import Article, Book, Chapter, Section, Cart, CartItem, Order, OrderItem, QA, VisitorLog
 
 # ==========================================
 # ניהול מאמרים
@@ -68,3 +67,17 @@ class QAAdmin(admin.ModelAdmin):
     list_display = ('question', 'category', 'created_at')
     search_fields = ('question', 'answer', 'category')
     list_filter = ('category', 'created_at')
+
+# ==========================================
+# ניהול ומעקב מבקרים (לצורכי סקרים ובדיקות)
+# ==========================================
+@admin.register(VisitorLog)
+class VisitorLogAdmin(admin.ModelAdmin):
+    list_display = ('ip_address', 'path', 'user', 'timestamp')
+    list_filter = ('timestamp', 'user')
+    search_fields = ('ip_address', 'path', 'user__username', 'user_agent')
+    readonly_fields = ('ip_address', 'path', 'user', 'user_agent', 'timestamp')
+    
+    # מונע מחיקה או עריכה בטעות של הלוגים דרך האדמין (אופציונלי - שומר על אמינות המעקב)
+    def has_add_permission(self, request):
+        return False

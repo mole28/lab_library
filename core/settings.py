@@ -32,7 +32,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-5^ip_@z$(vgsa#06rkrt$
 
 # SECURITY WARNING: don't run with debug turned on in production!
 # --- שינוי זמני ל-True כדי לאתר את שגיאת ה-500. חובה להחזיר ל-False אח"כ! ---
-DEBUG = False  # os.environ.get('DEBUG', 'False') == 'True' 
+DEBUG = os.environ.get('DEBUG', 'False') == 'True' 
 
 # רשימת המארחים המורשים כוללת את הדומיין שלך וכתובת ה-IP
 ALLOWED_HOSTS = ['leblibrary.co.il', 'www.leblibrary.co.il', '5.75.224.152', '127.0.0.1', 'localhost']
@@ -61,6 +61,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware', # ניהול קבצים סטטיים בייצור
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'articles.middleware.VisitorTrackingMiddleware'
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',

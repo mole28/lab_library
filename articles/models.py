@@ -48,7 +48,7 @@ class Article(models.Model):
     is_published = models.BooleanField(default=True, verbose_name="מפורסם")
 
     @property
-    def hebrew_date(self):
+    def hebrew_date_auto(self):
         if self.created_at: 
             heb_date = dates.HebrewDate.from_pydate(self.created_at.date())
             return heb_date.hebrew_date_string() 
@@ -70,7 +70,7 @@ class Book(models.Model):
     order = models.PositiveIntegerField(default=0, verbose_name="סדר תצוגה (1 יופיע ראשון)")
     
     class Meta:
-        ordering = ['order', 'title'] # <-- הוסף את השורות האלו לכאן
+        ordering = ['order', 'title']
 
     def __str__(self):
         return self.title
@@ -179,3 +179,21 @@ class QA(models.Model):
 
     def __str__(self):
         return self.question
+
+# ==========================================
+# מודל מעקב מבקרים (לצרכי סקרים ובדיקות)
+# ==========================================
+class VisitorLog(models.Model):
+    ip_address = models.GenericIPAddressField(null=True, blank=True, verbose_name="כתובת IP")
+    path = models.CharField(max_length=500, verbose_name="נתיב שביקר בו")
+    timestamp = models.DateTimeField(auto_now_add=True, verbose_name="זמן ביקור")
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="משתמש")
+    user_agent = models.TextField(blank=True, verbose_name="דפדפן / מכשיר")
+
+    class Meta:
+        verbose_name = "לוג ביקור"
+        verbose_name_plural = "לוגים של מבקרים"
+        ordering = ['-timestamp']
+
+    def __str__(self):
+        return f"{self.ip_address} - {self.path} ({self.timestamp})"
