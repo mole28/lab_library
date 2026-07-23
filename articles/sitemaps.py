@@ -46,3 +46,7 @@ class ArticleSitemap(Sitemap):
         elif hasattr(obj, 'created_at'):
             return obj.created_at
         return None
+    
+sitemaps = {
+    'articles': ArticleSitemap, # ודא שזה אכן שם המחלקה שמוגדרת אצלך בקובץ
+}
