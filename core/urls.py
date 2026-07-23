@@ -4,8 +4,10 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.http import HttpResponse
 from django.contrib.sitemaps.views import sitemap
-from core.sitemaps import StaticViewSitemap, ArticleSitemap
 from django.views.generic import TemplateView
+
+# === התיקון כאן: הייבוא מגיע מתיקיית articles ולא מ-core ===
+from articles.sitemaps import StaticViewSitemap, ArticleSitemap
 
 # איחוד כל מפות האתר למילון אחד
 sitemaps = {

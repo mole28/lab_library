@@ -47,11 +47,15 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',     # <--- הוסף: חובה עבור מפות אתר
     'django.contrib.sitemaps',  # <--- התוספת למפת האתר
     'sslserver',  # נוסף עבור הרצת שרת HTTPS מקומי לבדיקות
     'ckeditor',
     'articles',
 ]
+
+# חובה להגדיר מספר מזהה לאתר כאשר משתמשים ב-django.contrib.sites
+SITE_ID = 1
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

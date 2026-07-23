@@ -34,3 +34,15 @@ class ArticleSitemap(Sitemap):
         except NoReverseMatch:
             # עם קידומת
             return reverse('articles:detail', kwargs={'pk': item.pk})
+
+    # =====================================
+    # התוספת המנצחת עבור SEO - מתי עודכן?
+    # =====================================
+    def lastmod(self, obj):
+        # אם יש לך שדה 'updated_at' במודל, נשתמש בו. 
+        # אם קראת לשדה התאריך אחרת (למשל 'created_at' או 'publish_date'), שנה את זה כאן בהתאם.
+        if hasattr(obj, 'updated_at'):
+            return obj.updated_at
+        elif hasattr(obj, 'created_at'):
+            return obj.created_at
+        return None
