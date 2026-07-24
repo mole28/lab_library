@@ -20,5 +20,19 @@
       "sizes": "512x512",
       "type": "image/png"
     }
-  ]
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false,
+  "shortcuts": [],
+  "wakelock": false,
+  "display_override": ["window-controls-overlay"],
+  "handle_links": "preferred",
+  "dir": "ltr",
+  "lang": "he",
+  "iarc_rating_id": "",
+  "serviceworker": {
+    "src": "/sw.js",
+    "scope": "/"
+  },
+  "android_package_name": "il.co.leblibrary.v2"
 }
